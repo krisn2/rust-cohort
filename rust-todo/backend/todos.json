@@ -1,5 +1,10 @@
 {
   "todos": {
+    "4": {
+      "id": 4,
+      "todo": "Learn Rust",
+      "complete": false
+    },
     "3": {
       "id": 3,
       "todo": "run",
@@ -8,8 +13,8 @@
     "2": {
       "id": 2,
       "todo": "Eat",
-      "complete": false
+      "complete": true
     }
   },
-  "next_id": 4
+  "next_id": 5
 }

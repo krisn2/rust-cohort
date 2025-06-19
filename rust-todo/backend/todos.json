@@ -1,20 +1,10 @@
 {
   "todos": {
-    "4": {
-      "id": 4,
+    "5": {
+      "id": 5,
       "todo": "Learn Rust",
       "complete": false
-    },
-    "3": {
-      "id": 3,
-      "todo": "run",
-      "complete": false
-    },
-    "2": {
-      "id": 2,
-      "todo": "Eat",
-      "complete": true
     }
   },
-  "next_id": 5
+  "next_id": 6
 }

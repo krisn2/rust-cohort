@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 
-use crate::model::{Todo, TodoList};
+use crate::model::TodoList;
 
 // Application state
 pub struct AppState {

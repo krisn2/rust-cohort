@@ -1,5 +1,6 @@
 use actix_web::{web, App, HttpServer, middleware::Logger};
 use std::sync::Mutex;
+use actix_cors::Cors;
 
 mod model;
 mod controllers;
@@ -35,9 +36,20 @@ async fn main() -> std::io::Result<()> {
     println!("  DELETE /todos/{{id}}       - Delete todo");
 
     HttpServer::new(move || {
+
+         let cors = Cors::default()
+            .allowed_origin("http://localhost:5173")
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE"])
+            .allowed_headers(vec![
+                actix_web::http::header::AUTHORIZATION,
+                actix_web::http::header::CONTENT_TYPE,
+            ])
+            .max_age(3600);
+
         App::new()
             .app_data(app_state.clone())
             .wrap(Logger::default())
+            .wrap(cors)
             .route("/health", web::get().to(health_check))
             .route("/todos", web::get().to(get_todos))
             .route("/todos/{id}", web::get().to(get_todo))

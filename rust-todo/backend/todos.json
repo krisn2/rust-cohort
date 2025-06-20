@@ -1,10 +1,4 @@
 {
-  "todos": {
-    "5": {
-      "id": 5,
-      "todo": "Learn Rust",
-      "complete": false
-    }
-  },
-  "next_id": 6
+  "todos": {},
+  "next_id": 12
 }

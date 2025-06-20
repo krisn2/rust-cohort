@@ -30,10 +30,10 @@ async fn main() -> std::io::Result<()> {
     println!("Available endpoints:");
     println!("  GET    /health           - Health check");
     println!("  GET    /todos            - Get all todos");
-    println!("  GET    /todos/{{id}}       - Get todo by ID");
-    println!("  POST   /todos            - Create new todo");
-    println!("  PUT    /todos/{{id}}       - Update todo");
-    println!("  DELETE /todos/{{id}}       - Delete todo");
+    println!("  GET    /todo/{{id}}       - Get todo by ID");
+    println!("  POST   /todo            - Create new todo");
+    println!("  PUT    /todo/{{id}}       - Update todo");
+    println!("  DELETE /todo/{{id}}       - Delete todo");
 
     HttpServer::new(move || {
 
@@ -52,10 +52,10 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .route("/health", web::get().to(health_check))
             .route("/todos", web::get().to(get_todos))
-            .route("/todos/{id}", web::get().to(get_todo))
-            .route("/todos", web::post().to(create_todo))
-            .route("/todos/{id}", web::put().to(update_todo))
-            .route("/todos/{id}", web::delete().to(delete_todo))
+            .route("/todo/{id}", web::get().to(get_todo))
+            .route("/todo", web::post().to(create_todo))
+            .route("/todo/{id}", web::put().to(update_todo))
+            .route("/todo/{id}", web::delete().to(delete_todo))
     })
     .bind("127.0.0.1:8080")?
     .run()

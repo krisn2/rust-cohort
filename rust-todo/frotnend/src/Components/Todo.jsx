@@ -1,41 +1,3 @@
-// import TodoItem from "./TodoItem";
-
-
-// const Todo = () => {
-//   return (
-//     <TodoItem/>
-//     // <div>
-//     //   <div className="text-center w-full px-40 space-y-3">
-//     //     <p className="font-extrabold text-5xl font-sans">
-//     //       Turn Intentions into Actions One Task at a Time.
-//     //     </p>
-//     //     <p className="font-sans italic font-medium">
-//     //       Stay focused. Stay organized. Stay unstoppable.
-//     //     </p>
-//     //   </div>
-
-//     //   <div className="my-15">
-//     //     <div className="px-50">
-//     //       <div className="bg-gray-100/15 rounded-xl w-full py-3 flex justify-between">
-//     //         <div className="flex justify-center items-center">
-//     //           <input type="checkbox" name="complete" className="mx-3 border-none p-1" />
-//     //           <p className="font-medium font-sans">Coding</p>
-//     //         </div>
-//     //         <div className="flex justify-center items-center">
-//     //         <button type="submit" className="bg-green-200 mx-3 text-black px-7 py-1.5 cursor-pointer rounded-4xl font-medium">Edit</button>
-//     //         <button type="submit" className="bg-red-200 mx-3 text-black px-7 py-1.5 cursor-pointer rounded-4xl font-medium">Delete</button>
-//     //         </div>
-//     //       </div>
-//     //     </div>
-//     //   </div>
-//     // </div>
-//   );
-// };
-
-// export default Todo;
-
-
-
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import TodoItem from './TodoItem';
@@ -66,12 +28,12 @@ const Todo = () => {
     }
   };
 
-  // Add new todo
-  const addTodo = async (title) => {
+  // Add new todo - FIXED: Pass just the text, not an object
+  const addTodo = async (todoText) => {
     try {
       setOperationLoading(true);
       setError(null);
-      const newTodo = await TodoAPI.createTodo({ title, completed: false });
+      const newTodo = await TodoAPI.createTodo(todoText); // Just pass the text
       setTodos(prev => [...prev, newTodo]);
     } catch (err) {
       setError(err.message);
@@ -80,7 +42,7 @@ const Todo = () => {
     }
   };
 
-  // Toggle todo completion
+  // Toggle todo completion - FIXED: Pass just the completion status
   const toggleTodo = async (id) => {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
@@ -88,10 +50,7 @@ const Todo = () => {
     try {
       setOperationLoading(true);
       setError(null);
-      const updatedTodo = await TodoAPI.updateTodo(id, {
-        ...todo,
-        completed: !todo.completed
-      });
+      const updatedTodo = await TodoAPI.updateTodo(id, !todo.complete); // Pass boolean
       setTodos(prev => prev.map(t => t.id === id ? updatedTodo : t));
     } catch (err) {
       setError(err.message);
@@ -100,25 +59,8 @@ const Todo = () => {
     }
   };
 
-  // Edit todo title
-  const editTodo = async (id, newTitle) => {
-    const todo = todos.find(t => t.id === id);
-    if (!todo) return;
-
-    try {
-      setOperationLoading(true);
-      setError(null);
-      const updatedTodo = await TodoAPI.updateTodo(id, {
-        ...todo,
-        title: newTitle
-      });
-      setTodos(prev => prev.map(t => t.id === id ? updatedTodo : t));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setOperationLoading(false);
-    }
-  };
+  // REMOVED: Edit todo function - Your API doesn't support editing todo text
+  // Only completion status can be updated
 
   // Delete todo
   const deleteTodo = async (id) => {
@@ -139,8 +81,8 @@ const Todo = () => {
     fetchTodos();
   }, []);
 
-  // Calculate stats
-  const completedCount = todos.filter(todo => todo.completed).length;
+  // Calculate stats - FIXED: Use 'complete' property
+  const completedCount = todos.filter(todo => todo.complete).length;
   const totalCount = todos.length;
 
   // Show loading spinner while initial load
@@ -179,7 +121,7 @@ const Todo = () => {
         {/* Add Todo Form */}
         <AddTodoForm onAdd={addTodo} isLoading={operationLoading} />
 
-        {/* Todo List */}
+        {/* Todo List - FIXED: Pass correct props */}
         <div className="space-y-4">
           {todos.length === 0 ? (
             <EmptyState />
@@ -187,11 +129,11 @@ const Todo = () => {
             todos.map(todo => (
               <TodoItem
                 key={todo.id}
-                todo={todo}
+                todo={todo} // Pass the entire todo object
                 onToggle={toggleTodo}
-                onEdit={editTodo}
                 onDelete={deleteTodo}
                 isUpdating={operationLoading}
+                // Removed onEdit since API doesn't support text editing
               />
             ))
           )}

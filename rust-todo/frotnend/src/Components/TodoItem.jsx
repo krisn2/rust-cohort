@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Trash2, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 
 const TodoItem = ({ todo, onToggle, onDelete, isUpdating }) => {

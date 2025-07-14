@@ -14,6 +14,8 @@ use std::fs::{self, File};
 use std::io::Write;
 use async_process::Command;
 
+use actix_web::{web, Responder, HttpResponse};
+
 
 fn latex_escape(input: &str) -> String {
     input.replace("&", "\\&")
@@ -134,15 +136,15 @@ fn personal_info(personal_info: &Personal) -> String {
         fullname = latex_escape(personal_info.fullname.as_str()),
         number = latex_escape(personal_info.number.as_str()),
         email = latex_escape(personal_info.email.as_str()),
-        web_url = latex_escape(personal_info.web_url.as_str()),
-        linkedin_url = latex_escape(personal_info.linkedin_url.as_str()),
+        web_url = latex_escape(personal_info.web_url.as_deref().unwrap_or("")),
+        linkedin_url = latex_escape(personal_info.linkedin_url.as_deref().unwrap_or("")),
         linkedin_name = latex_escape(personal_info.linkedin_name.as_str()),
-        github_url = latex_escape(personal_info.github_url.as_str()),
-        github_name = latex_escape(personal_info.github_name.as_str()),
+        github_url = latex_escape(personal_info.github_url.as_deref().unwrap_or("")),
+        github_name = latex_escape(personal_info.github_name.as_deref().unwrap_or("")),
     )
 }
 
-pub fn resume_tex(resume: &ResumeRequest) -> String {
+fn resume_tex(resume: &ResumeRequest) -> String {
     let mut tex = String::new();
     let personal = &resume.personal;
     let education_data = &resume.education;
@@ -282,7 +284,7 @@ pub fn resume_tex(resume: &ResumeRequest) -> String {
 
 
 /// Convert LaTeX string to PDF bytes (in memory, per-request).
-pub async fn generate_pdf_from_latex(latex_code: &str) -> Result<Vec<u8>, String> {
+async fn generate_pdf_from_latex(latex_code: &str) -> Result<Vec<u8>, String> {
     let dir = tempdir().map_err(|e| e.to_string())?;
     let tex_path = dir.path().join("resume.tex");
 
@@ -314,4 +316,19 @@ pub async fn generate_pdf_from_latex(latex_code: &str) -> Result<Vec<u8>, String
 
     // `dir` is auto-deleted here when it goes out of scope
     Ok(pdf_bytes)
+}
+
+
+
+pub async fn handle_resume(data: web::Json<ResumeRequest>) -> impl Responder {
+    let resume = data.into_inner();
+    let tex_code = resume_tex(&resume);
+
+    match generate_pdf_from_latex(&tex_code).await {
+        Ok(pdf_bytes) => HttpResponse::Ok()
+            .insert_header(("Content-Type", "application/pdf"))
+            .insert_header(("Content-Disposition", "attachment; filename=\"resume.pdf\""))
+            .body(pdf_bytes),
+        Err(err) => HttpResponse::InternalServerError().body(format!("PDF generation error: {err}")),
+    }
 }

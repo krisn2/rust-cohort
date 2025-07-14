@@ -5,3 +5,4 @@ pub mod projects;
 pub mod profile;
 pub mod common;
 pub mod resume;
+pub mod users;

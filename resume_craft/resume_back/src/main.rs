@@ -5,6 +5,9 @@ use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use models::resume::ResumeRequest;
 use handlers::resume_handler::{resume_tex, generate_pdf_from_latex};
 
+const DB_NAME: &str = "resume_db";
+const COLLECTION_NAME: &str = "resumes";
+
 async fn handle_resume(data: web::Json<ResumeRequest>) -> impl Responder {
     let resume = data.into_inner();
     let tex_code = resume_tex(&resume);
@@ -21,6 +24,8 @@ async fn handle_resume(data: web::Json<ResumeRequest>) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let client = mongodb::Client::with_uri_str("mongodb://localhost:27017").await?;
+    
     
     HttpServer::new(|| {
         App::new()

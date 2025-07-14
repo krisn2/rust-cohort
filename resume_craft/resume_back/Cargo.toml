@@ -10,3 +10,4 @@ serde_json = "1.0"
 tempfile = "3"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 async-process = "1.4"
+mongodb = "3.2.4"

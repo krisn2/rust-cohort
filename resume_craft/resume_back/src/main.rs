@@ -1,12 +1,12 @@
 mod models;
 mod handlers;
 mod utils;
-mod middleware; // ✅ Rename from `middlerware` if needed
+mod middleware; 
 
 use actix_web::{web, App, HttpServer};
 use handlers::resume_handler::handle_resume;
 use handlers::user_handlers::{register, login};
-use middleware::auth::AuthMiddleware; // ✅ Update to match corrected folder name
+use middleware::auth::AuthMiddleware; 
 
 #[actix_web::main]
 async fn main() ->  Result<(), Box<dyn std::error::Error>> {

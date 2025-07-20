@@ -10,5 +10,4 @@ pub struct Personal {
     pub linkedin_url: Option<String>,
     pub github_name: Option<String>,
     pub github_url: Option<String>,
-    pub city: String,
 }

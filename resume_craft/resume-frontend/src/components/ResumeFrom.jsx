@@ -1,346 +1,258 @@
 import { useState } from "react";
-
-
-
+import { useResume } from "../context/ResumeContext";
 
 const ResumeForm = () => {
   const [Data, setData] = useState({
     personal: {
-      fullname:"",
-      number:"",
-      email:"",
-      linkedin_name:"",
-      linkedin_url:"",
-      github_name:"",
-      github_url:"",
-      website:"",
-      address:"",
+      fullname: "",
+      number: "",
+      email: "",
+      linkedin_name: "",
+      linkedin_url: "",
+      github_name: "",
+      github_url: "",
+      website: "",
+      address: "",
     },
     education: {
-      educations:[{
-        school:"",
-        degree:"",
-        start_date:"",
-        end_date:"",
-        address:"",
-      }]
+      educations: [
+        {
+          school: "",
+          degree: "",
+          start_date: "",
+          end_date: "",
+          address: "",
+        },
+      ],
     },
-    experience:{
-      experiences:[{
-        position:"",
-        start_date:"",
-        end_data:"",
-        company_name:"",
-        company_address:"",
-        job_des:{
-          lines:[""],
-        }
-      }]
+    experience: {
+      experiences: [
+        {
+          position: "",
+          start_date: "",
+          end_data: "",
+          company_name: "",
+          company_address: "",
+          job_des: {
+            lines: [""],
+          },
+        },
+      ],
     },
-    project:{
-      projects:[{
-        title:"",
-        tech_stack:"",
-        start_date:"",
-        end_date:"",
-        project_des:{
-          lines:[""],
-        }
-      }]
-    },
-    skills:{
-      categories:[{
-        name:"",
-        items:[""],
-      }]
-    }
-  });
-
-  const updatePersonal =(field, value) => {
-    setData(prevData => ({
-      ...prevData,
-      personal:{
-        ...prevData.personal,
-        [field]: value
-      }
-    }))
-  }
-
-  const addEducation = () => {
-    setData(prevData => ({
-      ...prevData,
-      education:{
-        educations: [...prevData.education.educations, {
-          school:"",
-          degree:"",
-          start_date:"",
-          end_date:"",
-          address:""
-        }]
-      }
-    }))
-  }
-
-  const updateEducation = (index, field, value)=> {
-    setData(prevData => ({
-      ...prevData,
-      education:{
-        educations: prevData.education.educations.map((edu, i)=>
-          i === index ? {...edu, [field]: value} : edu
-        )
-      }
-    }))
-  }
-
-  const removeEducation = (index) => {
-    setData(prevData => ({
-      ...prevData,
-      education:{
-        educations: prevData.education.educations.filter((_, i)=> i !== index)
-      }
-    }))
-  }
-
-  const addExperience = () => {
-    setData(prevData => ({
-      ...prevData,
-      experience:{
-        experiences: [...prevData.experience.experiences, {
-          position:"",
-          start_date:"",
-          end_data:"",
-          company_name:"",
-          company_address:"",
-          job_des:{
-            lines:[""],
-          }
-        }]
-      }
-    }))
-  }
-
-  const updateExperience = (index, field, value) => {
-    setData(prevData => ({
-      ...prevData,
-      experience:{
-        experiences: prevData.experience.experiences.map((exp, i) =>
-          i === index ? {...exp, [field]: value} : exp
-        )
-      }
-    }))
-  }
-
-  const updateExperienceDescription = (expIndex, lineIndex, value) => {
-    setData(prev => ({
-      ...prev,
-      experience: {
-        experiences: prev.experience.experiences.map((exp, i) => 
-          i === expIndex ? {
-            ...exp,
-            job_des: {
-              lines: exp.job_des.lines.map((line, j) => j === lineIndex ? value : line)
-            }
-          } : exp
-        )
-      }
-    }));
-  };
-
-  const addExperienceDescription = (expIndex) => {
-    setData(prev => ({
-      ...prev,
-      experience: {
-        experiences: prev.experience.experiences.map((exp, i) => 
-          i === expIndex ? {
-            ...exp,
-            job_des: { lines: [...exp.job_des.lines, ""] }
-          } : exp
-        )
-      }
-    }));
-  };
-
-  const removeExperienceDescription = (expIndex, lineIndex) => {
-    setData(prev => ({
-      ...prev,
-      experience: {
-        experiences: prev.experience.experiences.map((exp, i) => 
-          i === expIndex ? {
-            ...exp,
-            job_des: { lines: exp.job_des.lines.filter((_, j) => j !== lineIndex) }
-          } : exp
-        )
-      }
-    }));
-  };
-
-  const removeExperience = (index) => {
-    setData(prev => ({
-      ...prev,
-      experience: {
-        experiences: prev.experience.experiences.filter((_, i) => i !== index)
-      }
-    }));
-  };
-
-  const addProject = () => {
-    setData(prev => ({
-      ...prev,
-      projects: {
-        projects: [...prev.projects.projects, {
-          name: "",
+    project: {
+      projects: [
+        {
+          title: "",
           tech_stack: "",
           start_date: "",
           end_date: "",
-          project_des: { lines: [""] }
-        }]
-      }
+          project_des: {
+            lines: [""],
+          },
+        },
+      ],
+    },
+    skills: {
+      categories: [
+        {
+          name: "",
+          items: [""],
+        },
+      ],
+    },
+  });
+
+  const { submitResume } = useResume();
+
+  const updatePersonal = (field, value) => {
+    setData((prevData) => ({
+      ...prevData,
+      personal: {
+        ...prevData.personal,
+        [field]: value,
+      },
     }));
   };
 
-  const updateProject = (index, field, value) => {
-    setData(prev => ({
-      ...prev,
-      projects: {
-        projects: prev.projects.projects.map((proj, i) => 
-          i === index ? { ...proj, [field]: value } : proj
-        )
-      }
+  const updateEducation = (field, value) => {
+    const updated = [...Data.education.educations];
+    updated[0][field] = value;
+    setData((prevData) => ({
+      ...prevData,
+      education: { educations: updated },
     }));
   };
 
-  const updateProjectDescription = (projIndex, lineIndex, value) => {
-    setData(prev => ({
-      ...prev,
-      projects: {
-        projects: prev.projects.projects.map((proj, i) => 
-          i === projIndex ? {
-            ...proj,
-            project_des: {
-              lines: proj.project_des.lines.map((line, j) => j === lineIndex ? value : line)
-            }
-          } : proj
-        )
-      }
+  const updateExperience = (field, value) => {
+    const updated = [...Data.experience.experiences];
+    if (field === "job_des") {
+      updated[0].job_des.lines[0] = value;
+    } else {
+      updated[0][field] = value;
+    }
+    setData((prevData) => ({
+      ...prevData,
+      experience: { experiences: updated },
     }));
   };
 
-  const addProjectDescription = (projIndex) => {
-    setData(prev => ({
-      ...prev,
-      projects: {
-        projects: prev.projects.projects.map((proj, i) => 
-          i === projIndex ? {
-            ...proj,
-            project_des: { lines: [...proj.project_des.lines, ""] }
-          } : proj
-        )
-      }
+  const updateProject = (field, value) => {
+    const updated = [...Data.project.projects];
+    if (field === "project_des") {
+      updated[0].project_des.lines[0] = value;
+    } else {
+      updated[0][field] = value;
+    }
+    setData((prevData) => ({
+      ...prevData,
+      project: { projects: updated },
     }));
   };
 
-  const removeProjectDescription = (projIndex, lineIndex) => {
-    setData(prev => ({
-      ...prev,
-      projects: {
-        projects: prev.projects.projects.map((proj, i) => 
-          i === projIndex ? {
-            ...proj,
-            project_des: { lines: proj.project_des.lines.filter((_, j) => j !== lineIndex) }
-          } : proj
-        )
-      }
+  const updateSkills = (field, value) => {
+    const updated = [...Data.skills.categories];
+    if (field === "name") {
+      updated[0].name = value;
+    } else if (field === "items") {
+      updated[0].items[0] = value;
+    }
+    setData((prevData) => ({
+      ...prevData,
+      skills: { categories: updated },
     }));
   };
 
-  const removeProject = (index) => {
-    setData(prev => ({
-      ...prev,
-      projects: {
-        projects: prev.projects.projects.filter((_, i) => i !== index)
-      }
-    }));
-  };
-
-  const addSkillCategory = () => {
-    setData(prev => ({
-      ...prev,
-      skills: {
-        categories: [...prev.skills.categories, {
-          category_name: "",
-          items: [""]
-        }]
-      }
-    }));
-  };
-
-  const updateSkillCategory = (index, field, value) => {
-    setData(prev => ({
-      ...prev,
-      skills: {
-        categories: prev.skills.categories.map((cat, i) => 
-          i === index ? { ...cat, [field]: value } : cat
-        )
-      }
-    }));
-  };
-
-  const updateSkillItem = (catIndex, itemIndex, value) => {
-    setData(prev => ({
-      ...prev,
-      skills: {
-        categories: prev.skills.categories.map((cat, i) => 
-          i === catIndex ? {
-            ...cat,
-            items: cat.items.map((item, j) => j === itemIndex ? value : item)
-          } : cat
-        )
-      }
-    }));
-  };
-
-  const addSkillItem = (catIndex) => {
-    setData(prev => ({
-      ...prev,
-      skills: {
-        categories: prev.skills.categories.map((cat, i) => 
-          i === catIndex ? { ...cat, items: [...cat.items, ""] } : cat
-        )
-      }
-    }));
-  };
-
-  const removeSkillItem = (catIndex, itemIndex) => {
-    setData(prev => ({
-      ...prev,
-      skills: {
-        categories: prev.skills.categories.map((cat, i) => 
-          i === catIndex ? { ...cat, items: cat.items.filter((_, j) => j !== itemIndex) } : cat
-        )
-      }
-    }));
-  };
-
-  const removeSkillCategory = (index) => {
-    setData(prev => ({
-      ...prev,
-      skills: {
-        categories: prev.skills.categories.filter((_, i) => i !== index)
-      }
-    }));
-  };
-
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form Data:', JSON.stringify(Data, null, 2));
-    alert('Resume data logged to console! Check the browser console (F12) to see the output.');
+    try {
+      await submitResume(Data);
+      alert("🎉 Resume submitted successfully!");
+    } catch (err) {
+      alert("❌ Failed to submit resume.");
+    }
   };
-  return (
-   <div className="">
-      
-   </div>
-  )
-}
 
-export default ResumeForm
+  return (
+    <div className="min-h-screen py-16 px-4 sm:px-10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+      <div className="max-w-4xl mx-auto bg-white/10 p-8 rounded-3xl shadow-xl backdrop-blur-xl border border-white/20">
+        <h1 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Build Your Resume
+        </h1>
+
+        <form onSubmit={handleSubmit} className="space-y-10">
+          {/* Personal Information */}
+          <Section title="Personal Information">
+            {Object.keys(Data.personal).map((key) => (
+              <Input
+                key={key}
+                label={key}
+                value={Data.personal[key]}
+                onChange={(e) => updatePersonal(key, e.target.value)}
+              />
+            ))}
+          </Section>
+
+          {/* Education */}
+          <Section title="Education">
+            {Object.keys(Data.education.educations[0]).map((key) => (
+              <Input
+                key={key}
+                label={key}
+                value={Data.education.educations[0][key]}
+                onChange={(e) => updateEducation(key, e.target.value)}
+              />
+            ))}
+          </Section>
+
+          {/* Experience */}
+          <Section title="Experience">
+            {Object.entries(Data.experience.experiences[0]).map(([key, val]) =>
+              key === "job_des" ? (
+                <textarea
+                  key={key}
+                  placeholder="Job Description"
+                  value={val.lines[0]}
+                  onChange={(e) => updateExperience("job_des", e.target.value)}
+                  className="form-textarea"
+                />
+              ) : (
+                <Input
+                  key={key}
+                  label={key}
+                  value={val}
+                  onChange={(e) => updateExperience(key, e.target.value)}
+                />
+              )
+            )}
+          </Section>
+
+          {/* Projects */}
+          <Section title="Projects">
+            {Object.entries(Data.project.projects[0]).map(([key, val]) =>
+              key === "project_des" ? (
+                <textarea
+                  key={key}
+                  placeholder="Project Description"
+                  value={val.lines[0]}
+                  onChange={(e) => updateProject("project_des", e.target.value)}
+                  className="form-textarea"
+                />
+              ) : (
+                <Input
+                  key={key}
+                  label={key}
+                  value={val}
+                  onChange={(e) => updateProject(key, e.target.value)}
+                />
+              )
+            )}
+          </Section>
+
+          {/* Skills */}
+          <Section title="Skills">
+            <Input
+              label="Category"
+              value={Data.skills.categories[0].name}
+              onChange={(e) => updateSkills("name", e.target.value)}
+            />
+            <Input
+              label="Skill"
+              value={Data.skills.categories[0].items[0]}
+              onChange={(e) => updateSkills("items", e.target.value)}
+            />
+          </Section>
+
+          <div className="text-center">
+            <button
+              type="submit"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+            >
+              Submit Resume
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Reusable Input Component
+const Input = ({ label, value, onChange }) => (
+  <input
+    type="text"
+    placeholder={label.replace("_", " ")}
+    value={value}
+    onChange={onChange}
+    className="px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+  />
+);
+
+// Reusable Section Wrapper
+const Section = ({ title, children }) => (
+  <div>
+    <h2 className="text-2xl font-semibold mb-4">{title}</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{children}</div>
+  </div>
+);
+
+export default ResumeForm;

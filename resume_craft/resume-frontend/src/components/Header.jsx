@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, User, FileText, Sparkles, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,10 +15,10 @@ const Header = () => {
   }, []);
 
   const navLinks = [
-    { name: 'About', href: '#about' },
-    { name: 'Examples', href: '#examples' },
-    { name: 'Contact', href: '#contact' },
-    { name: 'Help', href: '#help' }
+    { name: 'About', href: '/about' },
+    { name: 'Examples', href: '/examples' },
+    { name: 'Contact', href: '/contact' },
+    { name: 'Help', href: '/help' }
   ];
 
   return (
@@ -29,6 +30,7 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
+          <Link to="/">
           <div className="flex items-center space-x-2 group cursor-pointer">
             <div className="relative">
               <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
@@ -42,18 +44,19 @@ const Header = () => {
               ResumeCraft
             </span>
           </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link, index) => (
-              <a
+              <Link
                 key={index}
-                href={link.href}
+                to={link.href}
                 className="relative text-white/80 hover:text-white font-medium transition-colors duration-300 group py-2"
               >
                 {link.name}
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 group-hover:w-full transition-all duration-300" />
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -64,15 +67,18 @@ const Header = () => {
               <span>Login</span>
             </button>
             
+            
             <button className="text-white/80 hover:text-white font-medium px-4 py-2 rounded-xl border border-white/20 hover:border-white/40 hover:bg-white/10 transition-all duration-300">
               Sign Up
             </button>
-            
+
+            <Link to='/build'>
             <button className="group relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 overflow-hidden">
               <span className="relative z-10">Build Resume</span>
               <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
               <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -120,6 +126,7 @@ const Header = () => {
                 Sign Up
               </button>
               
+              <Link to='/build'>
               <button 
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-4 rounded-xl shadow-lg transition-all duration-300 flex items-center justify-center space-x-2"
                 onClick={() => setIsMenuOpen(false)}
@@ -128,6 +135,7 @@ const Header = () => {
                 <span>Build Resume</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+              </Link>
             </div>
           </div>
         </div>

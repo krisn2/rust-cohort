@@ -128,7 +128,7 @@ const ResumeForm = () => {
       await submitResume(Data);
       alert("🎉 Resume submitted successfully!");
     } catch (err) {
-      alert("❌ Failed to submit resume.");
+      alert("❌ Failed to submit resume.", err);
     }
   };
 

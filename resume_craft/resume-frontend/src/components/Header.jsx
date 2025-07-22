@@ -14,12 +14,12 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'About', href: '/about' },
-    { name: 'Examples', href: '/examples' },
-    { name: 'Contact', href: '/contact' },
-    { name: 'Help', href: '/help' }
-  ];
+  // const navLinks = [
+  //   { name: 'About', href: '/about' },
+  //   { name: 'Examples', href: '/examples' },
+  //   { name: 'Contact', href: '/contact' },
+  //   { name: 'Help', href: '/help' }
+  // ];
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${
@@ -47,7 +47,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* <div className="hidden md:flex items-center space-x-8">
             {navLinks.map((link, index) => (
               <Link
                 key={index}
@@ -58,7 +58,7 @@ const Header = () => {
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 group-hover:w-full transition-all duration-300" />
               </Link>
             ))}
-          </div>
+          </div> */}
 
           {/* Desktop Auth & CTA */}
           <div className="hidden md:flex items-center space-x-4">
@@ -99,7 +99,7 @@ const Header = () => {
       }`}>
         <div className="bg-white/10 backdrop-blur-2xl border-t border-white/20">
           <div className="max-w-7xl mx-auto px-4 py-6 space-y-4">
-            {navLinks.map((link, index) => (
+            {/* {navLinks.map((link, index) => (
               <a
                 key={index}
                 href={link.href}
@@ -108,7 +108,7 @@ const Header = () => {
               >
                 {link.name}
               </a>
-            ))}
+            ))} */}
             
             <div className="pt-4 border-t border-white/20 space-y-3">
               <button 

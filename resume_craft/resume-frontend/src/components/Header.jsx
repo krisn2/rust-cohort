@@ -62,15 +62,18 @@ const Header = () => {
 
           {/* Desktop Auth & CTA */}
           <div className="hidden md:flex items-center space-x-4">
+            <Link to={"/login"}>
             <button className="group flex items-center space-x-2 text-white/80 hover:text-white font-medium px-4 py-2 rounded-xl hover:bg-white/10 transition-all duration-300">
               <User className="w-4 h-4 group-hover:scale-110 transition-transform" />
               <span>Login</span>
             </button>
+            </Link>
             
-            
+            <Link to={"/signup"}>
             <button className="text-white/80 hover:text-white font-medium px-4 py-2 rounded-xl border border-white/20 hover:border-white/40 hover:bg-white/10 transition-all duration-300">
               Sign Up
             </button>
+            </Link>
 
             <Link to='/build'>
             <button className="group relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-purple-500/25 transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 overflow-hidden">

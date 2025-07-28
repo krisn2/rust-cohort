@@ -1,8 +1,11 @@
-import { useState } from "react";
-import { useResume } from "../context/useResume";
+import { useState, useEffect } from "react"; // Added useEffect
 import { Plus, Trash2, Save, AlertCircle } from "lucide-react";
+import axios from "axios";
 
 const ResumeForm = () => {
+  // State for authentication token, loaded from localStorage
+  // const [token, setToken] = useState(localStorage.getItem("auth_token") || ""); 
+
   const [data, setData] = useState({
     personal: {
       fullname: "",
@@ -30,7 +33,7 @@ const ResumeForm = () => {
         {
           position: "",
           start_date: "",
-          end_data: "", 
+          end_date: "", 
           company_name: "",
           address: "",
           job_des: {
@@ -55,7 +58,7 @@ const ResumeForm = () => {
     skills: {
       categories: [
         {
-          category_name: "",
+          category_name: "", 
           items: [""],
         },
       ],
@@ -64,7 +67,22 @@ const ResumeForm = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
-  const { submitResume } = useResume();
+
+  // Effect to keep token state in sync with localStorage.
+  // This is important if the token might be set by another part of the application.
+  useEffect(() => {
+    const handleStorageChange = () => {
+      // setToken(localStorage.getItem("auth_token") || "");
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    // Also check on mount in case it was set before this component rendered
+    handleStorageChange(); 
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   // Personal Information Updates
   const updatePersonal = (field, value) => {
@@ -120,6 +138,9 @@ const ResumeForm = () => {
   const updateExperience = (index, field, value) => {
     const updated = [...data.experience.experiences];
     if (field === "job_des") {
+      if (!updated[index].job_des) {
+        updated[index].job_des = { lines: [""] };
+      }
       updated[index].job_des.lines[0] = value;
     } else {
       updated[index][field] = value;
@@ -141,7 +162,7 @@ const ResumeForm = () => {
             start_date: "",
             end_date: "",
             company_name: "",
-            company_address: "",
+            address: "", 
             job_des: {
               lines: [""],
             },
@@ -166,6 +187,9 @@ const ResumeForm = () => {
   const updateProject = (index, field, value) => {
     const updated = [...data.project.projects];
     if (field === "project_des") {
+      if (!updated[index].project_des) {
+        updated[index].project_des = { lines: [""] };
+      }
       updated[index].project_des.lines[0] = value;
     } else {
       updated[index][field] = value;
@@ -183,7 +207,7 @@ const ResumeForm = () => {
         projects: [
           ...prev.project.projects,
           {
-            title: "",
+            name: "",
             tech_stack: "",
             start_date: "",
             end_date: "",
@@ -210,10 +234,10 @@ const ResumeForm = () => {
   // Skills Updates
   const updateSkills = (index, field, value) => {
     const updated = [...data.skills.categories];
-    if (field === "name") {
-      updated[index].name = value;
+    if (field === "category_name") { 
+      updated[index].category_name = value;
     } else if (field === "items") {
-      updated[index].items[0] = value;
+      updated[index].items[0] = value; 
     }
     setData(prev => ({
       ...prev,
@@ -228,7 +252,7 @@ const ResumeForm = () => {
         categories: [
           ...prev.skills.categories,
           {
-            name: "",
+            category_name: "", 
             items: [""],
           },
         ],
@@ -253,37 +277,61 @@ const ResumeForm = () => {
     if (!personal.fullname || !personal.email || !personal.number) {
       return "Please fill in required personal information (Name, Email, Phone)";
     }
+    // Check if token exists before submission
+    // if (!token) {
+    //   return "An authentication token is required to submit your resume. Please ensure you are logged in.";
+    // }
     return null;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     const validationError = validateForm();
     if (validationError) {
       setSubmitStatus({ type: 'error', message: validationError });
       return;
     }
-
+  
     setIsSubmitting(true);
     setSubmitStatus(null);
-
+  
     try {
-      await submitResume(data);
-      setSubmitStatus({ 
-        type: 'success', 
-        message: '🎉 Resume submitted successfully!' 
+      const res = await axios.post(
+        `${import.meta.env.VITE_API}/resume`, 
+        data,
+        {
+          responseType: 'blob',
+          // headers: {
+          //   // Include the authentication token from localStorage
+          //   Authorization: `Bearer ${token}`, 
+          // },
+        }
+      );
+  
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'resume.pdf'); 
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+  
+      setSubmitStatus({
+        type: 'success',
+        message: '🎉 Resume downloaded successfully!',
       });
     } catch (err) {
-      setSubmitStatus({ 
-        type: 'error', 
-        message: '❌ Failed to submit resume. Please try again.' 
+      setSubmitStatus({
+        type: 'error',
+        message: `❌ Failed to download resume PDF. Error: ${err.message}. Please ensure you are logged in and the backend is running.`,
       });
       console.error(err);
     } finally {
       setIsSubmitting(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen py-16 pt-28 px-4 sm:px-10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
@@ -373,7 +421,7 @@ const ResumeForm = () => {
                       <div key={key} className="md:col-span-2">
                         <textarea
                           placeholder="Job Description"
-                          value={val.lines[0]}
+                          value={val?.lines?.[0] || ""} 
                           onChange={(e) => updateExperience(index, "job_des", e.target.value)}
                           rows="4"
                           className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-vertical"
@@ -417,7 +465,7 @@ const ResumeForm = () => {
                       <div key={key} className="md:col-span-2">
                         <textarea
                           placeholder="Project Description"
-                          value={val.lines[0]}
+                          value={val?.lines?.[0] || ""}
                           onChange={(e) => updateProject(index, "project_des", e.target.value)}
                           rows="4"
                           className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-vertical"
@@ -458,15 +506,15 @@ const ResumeForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Category Name"
-                    value={category.name}
-                    onChange={(e) => updateSkills(index, "name", e.target.value)}
+                    value={category.category_name} 
+                    onChange={(e) => updateSkills(index, "category_name", e.target.value)} 
                     placeholder="e.g., Programming Languages"
                   />
                   <Input
                     label="Skills"
-                    value={category.items[0]}
+                    value={category.items?.[0] || ""} 
                     onChange={(e) => updateSkills(index, "items", e.target.value)}
-                    placeholder="e.g., JavaScript, Python, React"
+                    placeholder="e.g., JavaScript, Python, React (comma-separated)"
                   />
                 </div>
               </div>
@@ -477,7 +525,7 @@ const ResumeForm = () => {
           <div className="text-center pt-6">
             <button
               type="submit"
-              disabled={isSubmitting}
+              // disabled={isSubmitting || !token} // Disable if not logged in
               className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl shadow-lg transition-all duration-300 font-semibold ${
                 isSubmitting
                   ? 'bg-gray-500 cursor-not-allowed'
@@ -503,7 +551,7 @@ const Input = ({ label, value, onChange, type = "text", required = false, placeh
     <input
       type={type}
       placeholder={placeholder || `Enter ${label.toLowerCase()}`}
-      value={value}
+      value={value || ""} 
       onChange={onChange}
       required={required}
       className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200"

@@ -6,6 +6,7 @@ const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -14,16 +15,18 @@ const Signup = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const { data } = await axios.post(`${import.meta.env.VITE_API}/auth/signup`, {
+      const { data } = await axios.post(`${import.meta.env.VITE_API}/register`, {
         name,
         email,
+        phone,
         password,
       });
   
-      alert("✅ Signup successful! Please login.", data);
+      // alert("✅ Signup successful! Please login.", data);
+      console.log(data);
       navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.error || "❌ Signup failed.");
+      console.log(err.response?.data?.error || "❌ Signup failed.");
     } finally {
       setLoading(false);
     }
@@ -46,6 +49,13 @@ const Signup = () => {
           className="w-full mb-4 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Mobile No."
+          className="w-full mb-6 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
         />
         <input
           type="password"

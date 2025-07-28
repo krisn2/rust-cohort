@@ -322,6 +322,7 @@ async fn generate_pdf_from_latex(latex_code: &str) -> Result<Vec<u8>, String> {
 
 pub async fn handle_resume(data: web::Json<ResumeRequest>) -> impl Responder {
     let resume = data.into_inner();
+    println!("{:?}",resume);
     let tex_code = resume_tex(&resume);
 
     match generate_pdf_from_latex(&tex_code).await {

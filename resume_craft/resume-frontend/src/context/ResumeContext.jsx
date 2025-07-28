@@ -1,7 +1,7 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useState } from 'react';
 import axios from 'axios';
 
-const ResumeContext = createContext();
+export const ResumeContext = createContext();
 
 export const ResumeProvider = ({ children }) => {
   const [resumeData, setResumeData] = useState(null);
@@ -14,11 +14,13 @@ export const ResumeProvider = ({ children }) => {
     
     try {
       // Fallback URL if environment variable is not set
-      const apiUrl = import.meta.env.VITE_API || 'http://localhost:8080/api';
+      const apiUrl = import.meta.env.VITE_API || 'http://localhost:8080';
+      const token = localStorage.getItem("auth_token")
       
       const response = await axios.post(`${apiUrl}/resume`, data, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         timeout: 10000, // 10 second timeout
       });
@@ -92,10 +94,3 @@ export const ResumeProvider = ({ children }) => {
   );
 };
 
-export const useResume = () => {
-  const context = useContext(ResumeContext);
-  if (!context) {
-    throw new Error('useResume must be used within a ResumeProvider');
-  }
-  return context;
-};

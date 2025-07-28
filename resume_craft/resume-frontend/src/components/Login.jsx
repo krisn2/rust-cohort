@@ -12,7 +12,7 @@ const Login = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const { data } = await axios.post(`${import.meta.env.VITE_API}/auth/login`, {
+      const { data } = await axios.post(`${import.meta.env.VITE_API}/login`, {
         email,
         password,
       });

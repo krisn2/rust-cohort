@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useResume } from "../context/ResumeContext";
+import { useResume } from "../context/useResume";
 import { Plus, Trash2, Save, AlertCircle } from "lucide-react";
 
 const ResumeForm = () => {
@@ -12,8 +12,7 @@ const ResumeForm = () => {
       linkedin_url: "",
       github_name: "",
       github_url: "",
-      website: "",
-      address: "",
+      web_url: "",
     },
     education: {
       educations: [
@@ -31,9 +30,9 @@ const ResumeForm = () => {
         {
           position: "",
           start_date: "",
-          end_date: "", // Fixed typo: was "end_data"
+          end_data: "", 
           company_name: "",
-          company_address: "",
+          address: "",
           job_des: {
             lines: [""],
           },
@@ -43,7 +42,7 @@ const ResumeForm = () => {
     project: {
       projects: [
         {
-          title: "",
+          name: "",
           tech_stack: "",
           start_date: "",
           end_date: "",
@@ -56,7 +55,7 @@ const ResumeForm = () => {
     skills: {
       categories: [
         {
-          name: "",
+          category_name: "",
           items: [""],
         },
       ],

@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react"; // Added useEffect
+import { useState, useEffect } from "react";
 import { Plus, Trash2, Save, AlertCircle } from "lucide-react";
 import axios from "axios";
 
 const ResumeForm = () => {
-  // State for authentication token, loaded from localStorage
+  // State for authentication token, loaded from localStorage (commented out for simplicity as per HTML form)
   // const [token, setToken] = useState(localStorage.getItem("auth_token") || "");
 
   const [data, setData] = useState({
@@ -37,12 +37,13 @@ const ResumeForm = () => {
           company_name: "",
           address: "",
           job_des: {
-            lines: [""],
+            lines: [""], // Initialize with one empty line
           },
         },
       ],
     },
-    project: {
+    // Corrected the key from 'project' to 'projects' to match backend expectation from HTML form
+    projects: { 
       projects: [
         {
           name: "",
@@ -50,7 +51,7 @@ const ResumeForm = () => {
           start_date: "",
           end_date: "",
           project_des: {
-            lines: [""],
+            lines: [""], // Initialize with one empty line
           },
         },
       ],
@@ -59,7 +60,7 @@ const ResumeForm = () => {
       categories: [
         {
           category_name: "",
-          items: [""],
+          items: [""], // Initialize with one empty item
         },
       ],
     },
@@ -70,19 +71,18 @@ const ResumeForm = () => {
 
   // Effect to keep token state in sync with localStorage.
   // This is important if the token might be set by another part of the application.
-  useEffect(() => {
-    const handleStorageChange = () => {
-      // setToken(localStorage.getItem("auth_token") || "");
-    };
+  // useEffect(() => {
+  //   const handleStorageChange = () => {
+  //     setToken(localStorage.getItem("auth_token") || "");
+  //   };
 
-    window.addEventListener("storage", handleStorageChange);
-    // Also check on mount in case it was set before this component rendered
-    handleStorageChange();
+  //   window.addEventListener("storage", handleStorageChange);
+  //   handleStorageChange(); // Also check on mount
 
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener("storage", handleStorageChange);
+  //   };
+  // }, []);
 
   // Personal Information Updates
   const updatePersonal = (field, value) => {
@@ -137,17 +137,42 @@ const ResumeForm = () => {
   // Experience Updates
   const updateExperience = (index, field, value) => {
     const updated = [...data.experience.experiences];
-    if (field === "job_des") {
-      if (!updated[index].job_des) {
-        updated[index].job_des = { lines: [""] };
-      }
-      updated[index].job_des.lines[0] = value;
-    } else {
-      updated[index][field] = value;
-    }
+    updated[index][field] = value;
     setData((prev) => ({
       ...prev,
       experience: { experiences: updated },
+    }));
+  };
+
+  const addJobDescriptionLine = (expIndex) => {
+    const updatedExperiences = [...data.experience.experiences];
+    if (!updatedExperiences[expIndex].job_des) {
+      updatedExperiences[expIndex].job_des = { lines: [] };
+    }
+    updatedExperiences[expIndex].job_des.lines.push("");
+    setData((prev) => ({
+      ...prev,
+      experience: { experiences: updatedExperiences },
+    }));
+  };
+
+  const removeJobDescriptionLine = (expIndex, lineIndex) => {
+    const updatedExperiences = [...data.experience.experiences];
+    if (updatedExperiences[expIndex].job_des.lines.length > 1) {
+      updatedExperiences[expIndex].job_des.lines.splice(lineIndex, 1);
+      setData((prev) => ({
+        ...prev,
+        experience: { experiences: updatedExperiences },
+      }));
+    }
+  };
+
+  const updateJobDescriptionLine = (expIndex, lineIndex, value) => {
+    const updatedExperiences = [...data.experience.experiences];
+    updatedExperiences[expIndex].job_des.lines[lineIndex] = value;
+    setData((prev) => ({
+      ...prev,
+      experience: { experiences: updatedExperiences },
     }));
   };
 
@@ -186,28 +211,55 @@ const ResumeForm = () => {
   };
 
   // Project Updates
+  // Ensure this uses 'projects' not 'project' to match state structure
   const updateProject = (index, field, value) => {
-    const updated = [...data.project.projects];
-    if (field === "project_des") {
-      if (!updated[index].project_des) {
-        updated[index].project_des = { lines: [""] };
-      }
-      updated[index].project_des.lines[0] = value;
-    } else {
-      updated[index][field] = value;
-    }
+    const updated = [...data.projects.projects];
+    updated[index][field] = value;
     setData((prev) => ({
       ...prev,
-      project: { projects: updated },
+      projects: { projects: updated },
     }));
   };
+
+  const addProjectDescriptionLine = (projIndex) => {
+    const updatedProjects = [...data.projects.projects];
+    if (!updatedProjects[projIndex].project_des) {
+      updatedProjects[projIndex].project_des = { lines: [] };
+    }
+    updatedProjects[projIndex].project_des.lines.push("");
+    setData((prev) => ({
+      ...prev,
+      projects: { projects: updatedProjects },
+    }));
+  };
+
+  const removeProjectDescriptionLine = (projIndex, lineIndex) => {
+    const updatedProjects = [...data.projects.projects];
+    if (updatedProjects[projIndex].project_des.lines.length > 1) {
+      updatedProjects[projIndex].project_des.lines.splice(lineIndex, 1);
+      setData((prev) => ({
+        ...prev,
+        projects: { projects: updatedProjects },
+      }));
+    }
+  };
+
+  const updateProjectDescriptionLine = (projIndex, lineIndex, value) => {
+    const updatedProjects = [...data.projects.projects];
+    updatedProjects[projIndex].project_des.lines[lineIndex] = value;
+    setData((prev) => ({
+      ...prev,
+      projects: { projects: updatedProjects },
+    }));
+  };
+
 
   const addProject = () => {
     setData((prev) => ({
       ...prev,
-      project: {
+      projects: { // Use 'projects' here
         projects: [
-          ...prev.project.projects,
+          ...prev.projects.projects, // Use 'projects' here
           {
             name: "",
             tech_stack: "",
@@ -223,27 +275,55 @@ const ResumeForm = () => {
   };
 
   const removeProject = (index) => {
-    if (data.project.projects.length > 1) {
+    if (data.projects.projects.length > 1) { // Use 'projects' here
       setData((prev) => ({
         ...prev,
-        project: {
-          projects: prev.project.projects.filter((_, i) => i !== index),
+        projects: { // Use 'projects' here
+          projects: prev.projects.projects.filter((_, i) => i !== index), // Use 'projects' here
         },
       }));
     }
   };
 
   // Skills Updates
-  const updateSkills = (index, field, value) => {
+  const updateSkillCategoryName = (index, value) => {
     const updated = [...data.skills.categories];
-    if (field === "category_name") {
-      updated[index].category_name = value;
-    } else if (field === "items") {
-      updated[index].items[0] = value;
-    }
+    updated[index].category_name = value;
     setData((prev) => ({
       ...prev,
       skills: { categories: updated },
+    }));
+  };
+
+  const addSkillItem = (catIndex) => {
+    const updatedCategories = [...data.skills.categories];
+    if (!updatedCategories[catIndex].items) {
+      updatedCategories[catIndex].items = [];
+    }
+    updatedCategories[catIndex].items.push("");
+    setData((prev) => ({
+      ...prev,
+      skills: { categories: updatedCategories },
+    }));
+  };
+
+  const removeSkillItem = (catIndex, itemIndex) => {
+    const updatedCategories = [...data.skills.categories];
+    if (updatedCategories[catIndex].items.length > 1) {
+      updatedCategories[catIndex].items.splice(itemIndex, 1);
+      setData((prev) => ({
+        ...prev,
+        skills: { categories: updatedCategories },
+      }));
+    }
+  };
+
+  const updateSkillItem = (catIndex, itemIndex, value) => {
+    const updatedCategories = [...data.skills.categories];
+    updatedCategories[catIndex].items[itemIndex] = value;
+    setData((prev) => ({
+      ...prev,
+      skills: { categories: updatedCategories },
     }));
   };
 
@@ -279,7 +359,7 @@ const ResumeForm = () => {
     if (!personal.fullname || !personal.email || !personal.number) {
       return "Please fill in required personal information (Name, Email, Phone)";
     }
-    // Check if token exists before submission
+    // Check if token exists before submission (if token is enabled)
     // if (!token) {
     //   return "An authentication token is required to submit your resume. Please ensure you are logged in.";
     // }
@@ -293,7 +373,8 @@ const ResumeForm = () => {
         normalizedPersonal[key] = null;
     });
 
-    const normalizedProjects = data.project.projects.map((project) => {
+    // Ensure we are normalizing data.projects.projects
+    const normalizedProjects = data.projects.projects.map((project) => {
       return {
         ...project,
         tech_stack:
@@ -304,60 +385,79 @@ const ResumeForm = () => {
     return {
       ...data,
       personal: normalizedPersonal,
-      project: { projects: normalizedProjects },
+      projects: { projects: normalizedProjects }, // Use 'projects' here
     };
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const validationError = validateForm();
-  if (validationError) {
-    setSubmitStatus({ type: 'error', message: validationError });
-    return;
-  }
+    const validationError = validateForm();
+    if (validationError) {
+      setSubmitStatus({ type: 'error', message: validationError });
+      return;
+    }
 
-  setIsSubmitting(true);
-  setSubmitStatus(null);
+    setIsSubmitting(true);
+    setSubmitStatus(null);
 
-  try {
-    const payload = normalizeResumeData(data); // ✅ convert "" to null
-    console.log("📦 Payload to submit:", payload); // Debug output
+    try {
+      const payload = normalizeResumeData(data); // ✅ convert "" to null
+      console.log("📦 Payload to submit:", payload); // Debug output
 
-    const res = await axios.post(
-      `${import.meta.env.VITE_API}/resume`,
-      payload,
-      {
-        responseType: 'blob',
-        headers: {
-          'Content-Type': 'application/json',
-          // Authorization: `Bearer ${token}`, // Uncomment if token needed
-        },
+      const res = await axios.post(
+        `${import.meta.env.VITE_API}/resume`,
+        payload,
+        {
+          responseType: 'blob',
+          headers: {
+            'Content-Type': 'application/json',
+            // Authorization: `Bearer ${token}`, // Uncomment if token needed
+          },
+        }
+      );
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'resume.pdf');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      setSubmitStatus({
+        type: 'success',
+        message: '🎉 Resume downloaded successfully!',
+      });
+    } catch (err) {
+      console.error("❌ Error submitting resume:", err);
+      let errorMessage = `❌ Failed to download resume PDF. ${err.message}`;
+      if (err.response && err.response.data) {
+        try {
+          // Attempt to read error message from blob if it's JSON
+          const errorBlob = new Blob([err.response.data], { type: 'application/json' });
+          const reader = new FileReader();
+          reader.onload = function() {
+            try {
+              const errorJson = JSON.parse(reader.result);
+              errorMessage = `❌ Failed to download resume PDF. ${errorJson.message || JSON.stringify(errorJson)}`;
+              setSubmitStatus({ type: 'error', message: errorMessage });
+            } catch (parseError) {
+              // If not JSON, use default blob error or status text
+              setSubmitStatus({ type: 'error', message: `❌ Failed to download resume PDF. Server responded with status: ${err.response.status}` });
+            }
+          };
+          reader.readAsText(errorBlob);
+        } catch (readError) {
+            setSubmitStatus({ type: 'error', message: `❌ Failed to download resume PDF. Server responded with status: ${err.response.status}` });
+        }
+      } else {
+        setSubmitStatus({ type: 'error', message: errorMessage });
       }
-    );
-
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'resume.pdf');
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    setSubmitStatus({
-      type: 'success',
-      message: '🎉 Resume downloaded successfully!',
-    });
-  } catch (err) {
-    console.error("❌ Error submitting resume:", err);
-    setSubmitStatus({
-      type: 'error',
-      message: `❌ Failed to download resume PDF. ${err.response?.data || err.message}`,
-    });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
 
   return (
@@ -390,6 +490,7 @@ const ResumeForm = () => {
                   label={formatLabel(key)}
                   value={data.personal[key]}
                   onChange={(e) => updatePersonal(key, e.target.value)}
+                  type={key.includes("url") ? "url" : key.includes("email") ? "email" : key.includes("number") ? "tel" : "text"}
                   required={["fullname", "email", "number"].includes(key)}
                 />
               ))}
@@ -424,7 +525,8 @@ const ResumeForm = () => {
                       onChange={(e) =>
                         updateEducation(index, key, e.target.value)
                       }
-                      type={key.includes("date") ? "date" : "text"}
+                      type={key.includes("date") ? "month" : "text"} 
+                      required={true} // All education fields are required in HTML
                     />
                   ))}
                 </div>
@@ -455,31 +557,62 @@ const ResumeForm = () => {
                   )}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(exp).map(([key, val]) =>
-                    key === "job_des" ? (
-                      <div key={key} className="md:col-span-2">
-                        <textarea
-                          placeholder="Job Description"
-                          value={val?.lines?.[0] || ""}
-                          onChange={(e) =>
-                            updateExperience(index, "job_des", e.target.value)
-                          }
-                          rows="4"
-                          className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-vertical"
+                  <Input
+                    label="Position"
+                    value={exp.position}
+                    onChange={(e) => updateExperience(index, "position", e.target.value)}
+                    required={true}
+                  />
+                  <Input
+                    label="Company Name"
+                    value={exp.company_name}
+                    onChange={(e) => updateExperience(index, "company_name", e.target.value)}
+                    required={true}
+                  />
+                  <Input
+                    label="Start Date"
+                    value={exp.start_date}
+                    onChange={(e) => updateExperience(index, "start_date", e.target.value)}
+                    type="month"
+                    required={true}
+                  />
+                  <Input
+                    label="End Date"
+                    value={exp.end_date}
+                    onChange={(e) => updateExperience(index, "end_date", e.target.value)}
+                    type="month"
+                    required={true}
+                  />
+                  <Input
+                    label="Address"
+                    value={exp.address}
+                    onChange={(e) => updateExperience(index, "address", e.target.value)}
+                    required={true}
+                  />
+
+                  {/* Dynamic Job Description Lines */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-purple-300 mb-2">
+                      Job Description
+                    </label>
+                    {exp.job_des.lines.map((line, lineIdx) => (
+                      <div key={lineIdx} className="flex items-center gap-2 mb-2">
+                        <input
+                          type="text"
+                          placeholder="Description line"
+                          value={line || ""}
+                          onChange={(e) => updateJobDescriptionLine(index, lineIdx, e.target.value)}
+                          className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
+                        {exp.job_des.lines.length > 1 && (
+                          <button type="button" onClick={() => removeJobDescriptionLine(index, lineIdx)} className="text-red-400 hover:text-red-300 p-1">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
-                    ) : (
-                      <Input
-                        key={key}
-                        label={formatLabel(key)}
-                        value={val}
-                        onChange={(e) =>
-                          updateExperience(index, key, e.target.value)
-                        }
-                        type={key.includes("date") ? "date" : "text"}
-                      />
-                    )
-                  )}
+                    ))}
+                    <AddButton onClick={() => addJobDescriptionLine(index)} text="Add Line" />
+                  </div>
                 </div>
               </div>
             ))}
@@ -488,14 +621,14 @@ const ResumeForm = () => {
 
           {/* Projects */}
           <Section title="Projects">
-            {data.project.projects.map((proj, index) => (
+            {data.projects.projects.map((proj, index) => ( 
               <div
                 key={index}
                 className="border border-white/20 rounded-lg p-6 mb-4"
               >
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-lg font-medium">Project {index + 1}</h4>
-                  {data.project.projects.length > 1 && (
+                  {data.projects.projects.length > 1 && ( 
                     <button
                       type="button"
                       onClick={() => removeProject(index)}
@@ -506,31 +639,56 @@ const ResumeForm = () => {
                   )}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(proj).map(([key, val]) =>
-                    key === "project_des" ? (
-                      <div key={key} className="md:col-span-2">
-                        <textarea
-                          placeholder="Project Description"
-                          value={val?.lines?.[0] || ""}
-                          onChange={(e) =>
-                            updateProject(index, "project_des", e.target.value)
-                          }
-                          rows="4"
-                          className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-vertical"
+                  <Input
+                    label="Project Name"
+                    value={proj.name}
+                    onChange={(e) => updateProject(index, "name", e.target.value)}
+                    required={true}
+                  />
+                  <Input
+                    label="Tech Stack"
+                    value={proj.tech_stack}
+                    onChange={(e) => updateProject(index, "tech_stack", e.target.value)}
+                    required={true}
+                  />
+                  <Input
+                    label="Start Date"
+                    value={proj.start_date}
+                    onChange={(e) => updateProject(index, "start_date", e.target.value)}
+                    type="month"
+                    required={true}
+                  />
+                  <Input
+                    label="End Date"
+                    value={proj.end_date}
+                    onChange={(e) => updateProject(index, "end_date", e.target.value)}
+                    type="month"
+                    required={true}
+                  />
+
+                  {/* Dynamic Project Description Lines */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-purple-300 mb-2">
+                      Project Description
+                    </label>
+                    {proj.project_des.lines.map((line, lineIdx) => (
+                      <div key={lineIdx} className="flex items-center gap-2 mb-2">
+                        <input
+                          type="text"
+                          placeholder="Description line"
+                          value={line || ""}
+                          onChange={(e) => updateProjectDescriptionLine(index, lineIdx, e.target.value)}
+                          className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
+                        {proj.project_des.lines.length > 1 && (
+                          <button type="button" onClick={() => removeProjectDescriptionLine(index, lineIdx)} className="text-red-400 hover:text-red-300 p-1">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
-                    ) : (
-                      <Input
-                        key={key}
-                        label={formatLabel(key)}
-                        value={val}
-                        onChange={(e) =>
-                          updateProject(index, key, e.target.value)
-                        }
-                        type={key.includes("date") ? "date" : "text"}
-                      />
-                    )
-                  )}
+                    ))}
+                    <AddButton onClick={() => addProjectDescriptionLine(index)} text="Add Line" />
+                  </div>
                 </div>
               </div>
             ))}
@@ -563,18 +721,34 @@ const ResumeForm = () => {
                     label="Category Name"
                     value={category.category_name}
                     onChange={(e) =>
-                      updateSkills(index, "category_name", e.target.value)
+                      updateSkillCategoryName(index, e.target.value)
                     }
                     placeholder="e.g., Programming Languages"
+                    required={true} // Category name is required in HTML
                   />
-                  <Input
-                    label="Skills"
-                    value={category.items?.[0] || ""}
-                    onChange={(e) =>
-                      updateSkills(index, "items", e.target.value)
-                    }
-                    placeholder="e.g., JavaScript, Python, React (comma-separated)"
-                  />
+                  {/* Dynamic Skill Items */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-purple-300 mb-2">
+                      Skills
+                    </label>
+                    {category.items.map((item, itemIdx) => (
+                      <div key={itemIdx} className="flex items-center gap-2 mb-2">
+                        <input
+                          type="text"
+                          placeholder="Skill"
+                          value={item || ""}
+                          onChange={(e) => updateSkillItem(index, itemIdx, e.target.value)}
+                          className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                        />
+                        {category.items.length > 1 && (
+                          <button type="button" onClick={() => removeSkillItem(index, itemIdx)} className="text-red-400 hover:text-red-300 p-1">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <AddButton onClick={() => addSkillItem(index)} text="Add Skill" />
+                  </div>
                 </div>
               </div>
             ))}
@@ -584,7 +758,7 @@ const ResumeForm = () => {
           <div className="text-center pt-6">
             <button
               type="submit"
-              // disabled={isSubmitting || !token} // Disable if not logged in
+              // disabled={isSubmitting || !token} // Disable if not logged in (re-enable if token is used)
               className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl shadow-lg transition-all duration-300 font-semibold ${
                 isSubmitting
                   ? "bg-gray-500 cursor-not-allowed"
@@ -601,7 +775,7 @@ const ResumeForm = () => {
   );
 };
 
-// Helper Components
+// Helper Components (remain mostly the same)
 const Input = ({
   label,
   value,
@@ -617,7 +791,7 @@ const Input = ({
     <input
       type={type}
       placeholder={placeholder || `Enter ${label.toLowerCase()}`}
-      value={value || ""}
+      value={value}
       onChange={onChange}
       required={required}
       className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200"

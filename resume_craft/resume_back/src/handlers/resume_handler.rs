@@ -128,7 +128,7 @@ fn personal_info(personal_info: &Personal) -> String {
 \textbf{{\Huge \scshape {fullname}}} \\
 \vspace{{1pt}}
 \small {number} $|$ \href{{mailto:{email}}}{{\underline{{{email}}}}} $|$
-\href{{{web_url}}}{{\underline{{Website}}}} $|$
+\href{{{web_url}}}{{\underline{{Portfolio}}}} $|$
 \href{{{linkedin_url}}}{{\underline{{{linkedin_name}}}}} $|$
 \href{{{github_url}}}{{\underline{{{github_name}}}}}
 \end{{center}}
@@ -322,7 +322,7 @@ async fn generate_pdf_from_latex(latex_code: &str) -> Result<Vec<u8>, String> {
 
 pub async fn handle_resume(data: web::Json<ResumeRequest>) -> impl Responder {
     let resume = data.into_inner();
-    println!("{:?}",resume);
+    // println!("{:?}",resume);
     let tex_code = resume_tex(&resume);
 
     match generate_pdf_from_latex(&tex_code).await {

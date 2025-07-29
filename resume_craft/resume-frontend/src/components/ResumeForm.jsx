@@ -402,8 +402,8 @@ const ResumeForm = () => {
     setSubmitStatus(null);
 
     try {
-      const payload = normalizeResumeData(data); // ✅ convert "" to null
-      console.log("📦 Payload to submit:", payload); // Debug output
+      const payload = normalizeResumeData(data); 
+      console.log("📦 Payload to submit:", payload); 
 
       const res = await axios.post(
         `${import.meta.env.VITE_API}/resume`,
@@ -434,7 +434,7 @@ const ResumeForm = () => {
       let errorMessage = `❌ Failed to download resume PDF. ${err.message}`;
       if (err.response && err.response.data) {
         try {
-          // Attempt to read error message from blob if it's JSON
+          
           const errorBlob = new Blob([err.response.data], { type: 'application/json' });
           const reader = new FileReader();
           reader.onload = function() {
@@ -443,7 +443,7 @@ const ResumeForm = () => {
               errorMessage = `❌ Failed to download resume PDF. ${errorJson.message || JSON.stringify(errorJson)}`;
               setSubmitStatus({ type: 'error', message: errorMessage });
             } catch (parseError) {
-              // If not JSON, use default blob error or status text
+              
               setSubmitStatus({ type: 'error', message: `❌ Failed to download resume PDF. Server responded with status: ${err.response.status}` });
             }
           };
@@ -526,7 +526,7 @@ const ResumeForm = () => {
                         updateEducation(index, key, e.target.value)
                       }
                       type={key.includes("date") ? "month" : "text"} 
-                      required={true} // All education fields are required in HTML
+                      required={true} 
                     />
                   ))}
                 </div>

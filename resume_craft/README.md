@@ -1,4 +1,4 @@
-📄 ResumeCraft: AI-Powered Resume Builder
+📄 ResumeCraft
 ResumeCraft is a full-stack application designed to help users create professional, ATS-friendly resumes with ease. It features a React-based frontend for an intuitive user experience and a Rust-powered backend that generates downloadable PDF resumes using LaTeX.
 
 ✨ Features

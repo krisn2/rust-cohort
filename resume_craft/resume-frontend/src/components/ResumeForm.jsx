@@ -4,7 +4,7 @@ import axios from "axios";
 
 const ResumeForm = () => {
   // State for authentication token, loaded from localStorage
-  // const [token, setToken] = useState(localStorage.getItem("auth_token") || ""); 
+  // const [token, setToken] = useState(localStorage.getItem("auth_token") || "");
 
   const [data, setData] = useState({
     personal: {
@@ -33,7 +33,7 @@ const ResumeForm = () => {
         {
           position: "",
           start_date: "",
-          end_date: "", 
+          end_date: "",
           company_name: "",
           address: "",
           job_des: {
@@ -58,7 +58,7 @@ const ResumeForm = () => {
     skills: {
       categories: [
         {
-          category_name: "", 
+          category_name: "",
           items: [""],
         },
       ],
@@ -75,18 +75,18 @@ const ResumeForm = () => {
       // setToken(localStorage.getItem("auth_token") || "");
     };
 
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
     // Also check on mount in case it was set before this component rendered
-    handleStorageChange(); 
+    handleStorageChange();
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
   // Personal Information Updates
   const updatePersonal = (field, value) => {
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       personal: {
         ...prev.personal,
@@ -99,14 +99,14 @@ const ResumeForm = () => {
   const updateEducation = (index, field, value) => {
     const updated = [...data.education.educations];
     updated[index][field] = value;
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       education: { educations: updated },
     }));
   };
 
   const addEducation = () => {
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       education: {
         educations: [
@@ -125,7 +125,7 @@ const ResumeForm = () => {
 
   const removeEducation = (index) => {
     if (data.education.educations.length > 1) {
-      setData(prev => ({
+      setData((prev) => ({
         ...prev,
         education: {
           educations: prev.education.educations.filter((_, i) => i !== index),
@@ -145,14 +145,14 @@ const ResumeForm = () => {
     } else {
       updated[index][field] = value;
     }
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       experience: { experiences: updated },
     }));
   };
 
   const addExperience = () => {
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       experience: {
         experiences: [
@@ -162,7 +162,7 @@ const ResumeForm = () => {
             start_date: "",
             end_date: "",
             company_name: "",
-            address: "", 
+            address: "",
             job_des: {
               lines: [""],
             },
@@ -174,10 +174,12 @@ const ResumeForm = () => {
 
   const removeExperience = (index) => {
     if (data.experience.experiences.length > 1) {
-      setData(prev => ({
+      setData((prev) => ({
         ...prev,
         experience: {
-          experiences: prev.experience.experiences.filter((_, i) => i !== index),
+          experiences: prev.experience.experiences.filter(
+            (_, i) => i !== index
+          ),
         },
       }));
     }
@@ -194,14 +196,14 @@ const ResumeForm = () => {
     } else {
       updated[index][field] = value;
     }
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       project: { projects: updated },
     }));
   };
 
   const addProject = () => {
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       project: {
         projects: [
@@ -222,7 +224,7 @@ const ResumeForm = () => {
 
   const removeProject = (index) => {
     if (data.project.projects.length > 1) {
-      setData(prev => ({
+      setData((prev) => ({
         ...prev,
         project: {
           projects: prev.project.projects.filter((_, i) => i !== index),
@@ -234,25 +236,25 @@ const ResumeForm = () => {
   // Skills Updates
   const updateSkills = (index, field, value) => {
     const updated = [...data.skills.categories];
-    if (field === "category_name") { 
+    if (field === "category_name") {
       updated[index].category_name = value;
     } else if (field === "items") {
-      updated[index].items[0] = value; 
+      updated[index].items[0] = value;
     }
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       skills: { categories: updated },
     }));
   };
 
   const addSkillCategory = () => {
-    setData(prev => ({
+    setData((prev) => ({
       ...prev,
       skills: {
         categories: [
           ...prev.skills.categories,
           {
-            category_name: "", 
+            category_name: "",
             items: [""],
           },
         ],
@@ -262,7 +264,7 @@ const ResumeForm = () => {
 
   const removeSkillCategory = (index) => {
     if (data.skills.categories.length > 1) {
-      setData(prev => ({
+      setData((prev) => ({
         ...prev,
         skills: {
           categories: prev.skills.categories.filter((_, i) => i !== index),
@@ -284,54 +286,79 @@ const ResumeForm = () => {
     return null;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    const validationError = validateForm();
-    if (validationError) {
-      setSubmitStatus({ type: 'error', message: validationError });
-      return;
-    }
-  
-    setIsSubmitting(true);
-    setSubmitStatus(null);
-  
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_API}/resume`, 
-        data,
-        {
-          responseType: 'blob',
-          // headers: {
-          //   // Include the authentication token from localStorage
-          //   Authorization: `Bearer ${token}`, 
-          // },
-        }
-      );
-  
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'resume.pdf'); 
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-  
-      setSubmitStatus({
-        type: 'success',
-        message: '🎉 Resume downloaded successfully!',
-      });
-    } catch (err) {
-      setSubmitStatus({
-        type: 'error',
-        message: `❌ Failed to download resume PDF. Error: ${err.message}. Please ensure you are logged in and the backend is running.`,
-      });
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
-    }
+  const normalizeResumeData = (data) => {
+    const normalizedPersonal = { ...data.personal };
+    ["web_url", "linkedin_url", "github_name", "github_url"].forEach((key) => {
+      if (normalizedPersonal[key]?.trim() === "")
+        normalizedPersonal[key] = null;
+    });
+
+    const normalizedProjects = data.project.projects.map((project) => {
+      return {
+        ...project,
+        tech_stack:
+          project.tech_stack?.trim() === "" ? null : project.tech_stack,
+      };
+    });
+
+    return {
+      ...data,
+      personal: normalizedPersonal,
+      project: { projects: normalizedProjects },
+    };
   };
-  
+
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const validationError = validateForm();
+  if (validationError) {
+    setSubmitStatus({ type: 'error', message: validationError });
+    return;
+  }
+
+  setIsSubmitting(true);
+  setSubmitStatus(null);
+
+  try {
+    const payload = normalizeResumeData(data); // ✅ convert "" to null
+    console.log("📦 Payload to submit:", payload); // Debug output
+
+    const res = await axios.post(
+      `${import.meta.env.VITE_API}/resume`,
+      payload,
+      {
+        responseType: 'blob',
+        headers: {
+          'Content-Type': 'application/json',
+          // Authorization: `Bearer ${token}`, // Uncomment if token needed
+        },
+      }
+    );
+
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'resume.pdf');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setSubmitStatus({
+      type: 'success',
+      message: '🎉 Resume downloaded successfully!',
+    });
+  } catch (err) {
+    console.error("❌ Error submitting resume:", err);
+    setSubmitStatus({
+      type: 'error',
+      message: `❌ Failed to download resume PDF. ${err.response?.data || err.message}`,
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen py-16 pt-28 px-4 sm:px-10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
@@ -341,11 +368,13 @@ const ResumeForm = () => {
         </h1>
 
         {submitStatus && (
-          <div className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
-            submitStatus.type === 'success' 
-              ? 'bg-green-500/20 border border-green-500/30 text-green-100' 
-              : 'bg-red-500/20 border border-red-500/30 text-red-100'
-          }`}>
+          <div
+            className={`mb-6 p-4 rounded-lg flex items-center gap-2 ${
+              submitStatus.type === "success"
+                ? "bg-green-500/20 border border-green-500/30 text-green-100"
+                : "bg-red-500/20 border border-red-500/30 text-red-100"
+            }`}
+          >
             <AlertCircle className="w-5 h-5" />
             {submitStatus.message}
           </div>
@@ -361,7 +390,7 @@ const ResumeForm = () => {
                   label={formatLabel(key)}
                   value={data.personal[key]}
                   onChange={(e) => updatePersonal(key, e.target.value)}
-                  required={['fullname', 'email', 'number'].includes(key)}
+                  required={["fullname", "email", "number"].includes(key)}
                 />
               ))}
             </div>
@@ -370,7 +399,10 @@ const ResumeForm = () => {
           {/* Education */}
           <Section title="Education">
             {data.education.educations.map((edu, index) => (
-              <div key={index} className="border border-white/20 rounded-lg p-6 mb-4">
+              <div
+                key={index}
+                className="border border-white/20 rounded-lg p-6 mb-4"
+              >
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-lg font-medium">Education {index + 1}</h4>
                   {data.education.educations.length > 1 && (
@@ -389,8 +421,10 @@ const ResumeForm = () => {
                       key={key}
                       label={formatLabel(key)}
                       value={edu[key]}
-                      onChange={(e) => updateEducation(index, key, e.target.value)}
-                      type={key.includes('date') ? 'date' : 'text'}
+                      onChange={(e) =>
+                        updateEducation(index, key, e.target.value)
+                      }
+                      type={key.includes("date") ? "date" : "text"}
                     />
                   ))}
                 </div>
@@ -402,9 +436,14 @@ const ResumeForm = () => {
           {/* Experience */}
           <Section title="Experience">
             {data.experience.experiences.map((exp, index) => (
-              <div key={index} className="border border-white/20 rounded-lg p-6 mb-4">
+              <div
+                key={index}
+                className="border border-white/20 rounded-lg p-6 mb-4"
+              >
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-lg font-medium">Experience {index + 1}</h4>
+                  <h4 className="text-lg font-medium">
+                    Experience {index + 1}
+                  </h4>
                   {data.experience.experiences.length > 1 && (
                     <button
                       type="button"
@@ -421,8 +460,10 @@ const ResumeForm = () => {
                       <div key={key} className="md:col-span-2">
                         <textarea
                           placeholder="Job Description"
-                          value={val?.lines?.[0] || ""} 
-                          onChange={(e) => updateExperience(index, "job_des", e.target.value)}
+                          value={val?.lines?.[0] || ""}
+                          onChange={(e) =>
+                            updateExperience(index, "job_des", e.target.value)
+                          }
                           rows="4"
                           className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-vertical"
                         />
@@ -432,8 +473,10 @@ const ResumeForm = () => {
                         key={key}
                         label={formatLabel(key)}
                         value={val}
-                        onChange={(e) => updateExperience(index, key, e.target.value)}
-                        type={key.includes('date') ? 'date' : 'text'}
+                        onChange={(e) =>
+                          updateExperience(index, key, e.target.value)
+                        }
+                        type={key.includes("date") ? "date" : "text"}
                       />
                     )
                   )}
@@ -446,7 +489,10 @@ const ResumeForm = () => {
           {/* Projects */}
           <Section title="Projects">
             {data.project.projects.map((proj, index) => (
-              <div key={index} className="border border-white/20 rounded-lg p-6 mb-4">
+              <div
+                key={index}
+                className="border border-white/20 rounded-lg p-6 mb-4"
+              >
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-lg font-medium">Project {index + 1}</h4>
                   {data.project.projects.length > 1 && (
@@ -466,7 +512,9 @@ const ResumeForm = () => {
                         <textarea
                           placeholder="Project Description"
                           value={val?.lines?.[0] || ""}
-                          onChange={(e) => updateProject(index, "project_des", e.target.value)}
+                          onChange={(e) =>
+                            updateProject(index, "project_des", e.target.value)
+                          }
                           rows="4"
                           className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-vertical"
                         />
@@ -476,8 +524,10 @@ const ResumeForm = () => {
                         key={key}
                         label={formatLabel(key)}
                         value={val}
-                        onChange={(e) => updateProject(index, key, e.target.value)}
-                        type={key.includes('date') ? 'date' : 'text'}
+                        onChange={(e) =>
+                          updateProject(index, key, e.target.value)
+                        }
+                        type={key.includes("date") ? "date" : "text"}
                       />
                     )
                   )}
@@ -490,9 +540,14 @@ const ResumeForm = () => {
           {/* Skills */}
           <Section title="Skills">
             {data.skills.categories.map((category, index) => (
-              <div key={index} className="border border-white/20 rounded-lg p-6 mb-4">
+              <div
+                key={index}
+                className="border border-white/20 rounded-lg p-6 mb-4"
+              >
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-lg font-medium">Skill Category {index + 1}</h4>
+                  <h4 className="text-lg font-medium">
+                    Skill Category {index + 1}
+                  </h4>
                   {data.skills.categories.length > 1 && (
                     <button
                       type="button"
@@ -506,14 +561,18 @@ const ResumeForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Category Name"
-                    value={category.category_name} 
-                    onChange={(e) => updateSkills(index, "category_name", e.target.value)} 
+                    value={category.category_name}
+                    onChange={(e) =>
+                      updateSkills(index, "category_name", e.target.value)
+                    }
                     placeholder="e.g., Programming Languages"
                   />
                   <Input
                     label="Skills"
-                    value={category.items?.[0] || ""} 
-                    onChange={(e) => updateSkills(index, "items", e.target.value)}
+                    value={category.items?.[0] || ""}
+                    onChange={(e) =>
+                      updateSkills(index, "items", e.target.value)
+                    }
                     placeholder="e.g., JavaScript, Python, React (comma-separated)"
                   />
                 </div>
@@ -528,12 +587,12 @@ const ResumeForm = () => {
               // disabled={isSubmitting || !token} // Disable if not logged in
               className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl shadow-lg transition-all duration-300 font-semibold ${
                 isSubmitting
-                  ? 'bg-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-purple-500/25 transform hover:scale-105'
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 hover:shadow-purple-500/25 transform hover:scale-105"
               } text-white`}
             >
               <Save className="w-5 h-5" />
-              {isSubmitting ? 'Submitting...' : 'Submit Resume'}
+              {isSubmitting ? "Submitting..." : "Submit Resume"}
             </button>
           </div>
         </form>
@@ -543,7 +602,14 @@ const ResumeForm = () => {
 };
 
 // Helper Components
-const Input = ({ label, value, onChange, type = "text", required = false, placeholder }) => (
+const Input = ({
+  label,
+  value,
+  onChange,
+  type = "text",
+  required = false,
+  placeholder,
+}) => (
   <div>
     <label className="block text-sm font-medium text-purple-300 mb-2">
       {label} {required && <span className="text-red-400">*</span>}
@@ -551,7 +617,7 @@ const Input = ({ label, value, onChange, type = "text", required = false, placeh
     <input
       type={type}
       placeholder={placeholder || `Enter ${label.toLowerCase()}`}
-      value={value || ""} 
+      value={value || ""}
       onChange={onChange}
       required={required}
       className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200"
@@ -581,9 +647,7 @@ const AddButton = ({ onClick, text }) => (
 
 // Utility function to format field labels
 const formatLabel = (key) => {
-  return key
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase());
+  return key.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 export default ResumeForm;

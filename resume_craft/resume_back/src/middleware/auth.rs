@@ -22,6 +22,7 @@ where // S is a service that processes ServiceRequest and returns ServiceRespons
     }
 }
 
+
 pub struct AuthMiddlewareService<S> {
     service: Rc<S>,
 }

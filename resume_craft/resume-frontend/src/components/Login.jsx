@@ -16,7 +16,7 @@ const Login = () => {
         email,
         password,
       });
-  
+      console.log(data.token);
       localStorage.setItem("auth_token", data.token);
       alert("✅ Logged in successfully!");
       navigate("/build");

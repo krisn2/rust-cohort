@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Plus, Trash2, Save, AlertCircle } from "lucide-react";
 import axios from "axios";
 
 const ResumeForm = () => {
   // State for authentication token, loaded from localStorage (commented out for simplicity as per HTML form)
-  // const [token, setToken] = useState(localStorage.getItem("auth_token") || "");
+  const token = localStorage.getItem("auth_token") || "";
 
   const [data, setData] = useState({
     personal: {
@@ -43,7 +43,7 @@ const ResumeForm = () => {
       ],
     },
     // Corrected the key from 'project' to 'projects' to match backend expectation from HTML form
-    projects: { 
+    projects: {
       projects: [
         {
           name: "",
@@ -68,21 +68,6 @@ const ResumeForm = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
-
-  // Effect to keep token state in sync with localStorage.
-  // This is important if the token might be set by another part of the application.
-  // useEffect(() => {
-  //   const handleStorageChange = () => {
-  //     setToken(localStorage.getItem("auth_token") || "");
-  //   };
-
-  //   window.addEventListener("storage", handleStorageChange);
-  //   handleStorageChange(); // Also check on mount
-
-  //   return () => {
-  //     window.removeEventListener("storage", handleStorageChange);
-  //   };
-  // }, []);
 
   // Personal Information Updates
   const updatePersonal = (field, value) => {
@@ -253,11 +238,11 @@ const ResumeForm = () => {
     }));
   };
 
-
   const addProject = () => {
     setData((prev) => ({
       ...prev,
-      projects: { // Use 'projects' here
+      projects: {
+        // Use 'projects' here
         projects: [
           ...prev.projects.projects, // Use 'projects' here
           {
@@ -275,10 +260,12 @@ const ResumeForm = () => {
   };
 
   const removeProject = (index) => {
-    if (data.projects.projects.length > 1) { // Use 'projects' here
+    if (data.projects.projects.length > 1) {
+      // Use 'projects' here
       setData((prev) => ({
         ...prev,
-        projects: { // Use 'projects' here
+        projects: {
+          // Use 'projects' here
           projects: prev.projects.projects.filter((_, i) => i !== index), // Use 'projects' here
         },
       }));
@@ -360,9 +347,9 @@ const ResumeForm = () => {
       return "Please fill in required personal information (Name, Email, Phone)";
     }
     // Check if token exists before submission (if token is enabled)
-    // if (!token) {
-    //   return "An authentication token is required to submit your resume. Please ensure you are logged in.";
-    // }
+    if (!token) {
+      return "An authentication token is required to submit your resume. Please ensure you are logged in.";
+    }
     return null;
   };
 
@@ -394,7 +381,7 @@ const ResumeForm = () => {
 
     const validationError = validateForm();
     if (validationError) {
-      setSubmitStatus({ type: 'error', message: validationError });
+      setSubmitStatus({ type: "error", message: validationError });
       return;
     }
 
@@ -402,63 +389,70 @@ const ResumeForm = () => {
     setSubmitStatus(null);
 
     try {
-      const payload = normalizeResumeData(data); 
-      console.log("📦 Payload to submit:", payload); 
+      const payload = normalizeResumeData(data);
+      console.log("📦 Payload to submit:", payload);
 
       const res = await axios.post(
         `${import.meta.env.VITE_API}/resume`,
         payload,
         {
-          responseType: 'blob',
+          responseType: "blob",
           headers: {
-            'Content-Type': 'application/json',
-            // Authorization: `Bearer ${token}`, // Uncomment if token needed
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Uncomment if token needed
           },
         }
       );
 
       const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', 'resume.pdf');
+      link.setAttribute("download", "resume.pdf");
       document.body.appendChild(link);
       link.click();
       link.remove();
 
       setSubmitStatus({
-        type: 'success',
-        message: '🎉 Resume downloaded successfully!',
+        type: "success",
+        message: "🎉 Resume downloaded successfully!",
       });
     } catch (err) {
       console.error("❌ Error submitting resume:", err);
       let errorMessage = `❌ Failed to download resume PDF. ${err.message}`;
       if (err.response && err.response.data) {
         try {
-          
-          const errorBlob = new Blob([err.response.data], { type: 'application/json' });
+          const errorBlob = new Blob([err.response.data], {
+            type: "application/json",
+          });
           const reader = new FileReader();
-          reader.onload = function() {
+          reader.onload = function () {
             try {
               const errorJson = JSON.parse(reader.result);
-              errorMessage = `❌ Failed to download resume PDF. ${errorJson.message || JSON.stringify(errorJson)}`;
-              setSubmitStatus({ type: 'error', message: errorMessage });
+              errorMessage = `❌ Failed to download resume PDF. ${
+                errorJson.message || JSON.stringify(errorJson)
+              }`;
+              setSubmitStatus({ type: "error", message: errorMessage });
             } catch (parseError) {
-              
-              setSubmitStatus({ type: 'error', message: `❌ Failed to download resume PDF. Server responded with status: ${err.response.status}` });
+              setSubmitStatus({
+                type: "error",
+                message: `❌ Failed to download resume PDF. Server responded with status: ${err.response.status}`,
+              });
             }
           };
           reader.readAsText(errorBlob);
         } catch (readError) {
-            setSubmitStatus({ type: 'error', message: `❌ Failed to download resume PDF. Server responded with status: ${err.response.status}` });
+          setSubmitStatus({
+            type: "error",
+            message: `❌ Failed to download resume PDF. Server responded with status: ${err.response.status}`,
+          });
         }
       } else {
-        setSubmitStatus({ type: 'error', message: errorMessage });
+        setSubmitStatus({ type: "error", message: errorMessage });
       }
     } finally {
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <div className="min-h-screen py-16 pt-28 px-4 sm:px-10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
@@ -490,7 +484,15 @@ const ResumeForm = () => {
                   label={formatLabel(key)}
                   value={data.personal[key]}
                   onChange={(e) => updatePersonal(key, e.target.value)}
-                  type={key.includes("url") ? "url" : key.includes("email") ? "email" : key.includes("number") ? "tel" : "text"}
+                  type={
+                    key.includes("url")
+                      ? "url"
+                      : key.includes("email")
+                      ? "email"
+                      : key.includes("number")
+                      ? "tel"
+                      : "text"
+                  }
                   required={["fullname", "email", "number"].includes(key)}
                 />
               ))}
@@ -517,26 +519,55 @@ const ResumeForm = () => {
                   )}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.keys(edu).map((key) => (
-                    <Input
-                      key={key}
-                      label={formatLabel(key)}
-                      value={edu[key]}
-                      onChange={(e) =>
-                        updateEducation(index, key, e.target.value)
-                      }
-                      type={key.includes("date") ? "month" : "text"} 
-                      required={true} 
-                    />
-                  ))}
+                  <Input
+                    label="School/College"
+                    value={edu.school}
+                    onChange={(e) => updateEducation(index, "school", e.target.value)}
+                    type="text"
+                    required={true}
+                  />
+                  <Input
+                    label="Degree/10th/12th"
+                    value={edu.degree}
+                    onChange={(e) => updateEducation(index, "degree", e.target.value)}
+                    type="text"
+                    required={true}
+                  />
+                  <Input
+                    label="Start Date"
+                    value={edu.start_date}
+                    onChange={(e) =>
+                      updateEducation(index, "start_date", e.target.value)
+                    }
+                    type="month"
+                    required={true}
+                  />
+                  <Input
+                    label="End Date"
+                    value={edu.end_date}
+                    onChange={(e) =>
+                      updateEducation(index, "end_date", e.target.value)
+                    }
+                    type="month"
+                    required={true}
+                  />
+                  <Input
+                    label="Address"
+                    value={edu.address}
+                    onChange={(e) =>
+                      updateEducation(index, "address", e.target.value)
+                    }
+                    type="text"
+                    required={true}
+                  />
                 </div>
               </div>
             ))}
             <AddButton onClick={addEducation} text="Add Education" />
           </Section>
 
-          {/* Experience */}
-          <Section title="Experience">
+          {/* Experience - Now Optional */}
+          <Section title="Experience (Optional)">
             {data.experience.experiences.map((exp, index) => (
               <div
                 key={index}
@@ -560,36 +591,40 @@ const ResumeForm = () => {
                   <Input
                     label="Position"
                     value={exp.position}
-                    onChange={(e) => updateExperience(index, "position", e.target.value)}
-                    required={true}
+                    onChange={(e) =>
+                      updateExperience(index, "position", e.target.value)
+                    }
                   />
                   <Input
                     label="Company Name"
                     value={exp.company_name}
-                    onChange={(e) => updateExperience(index, "company_name", e.target.value)}
-                    required={true}
+                    onChange={(e) =>
+                      updateExperience(index, "company_name", e.target.value)
+                    }
                   />
                   <Input
                     label="Start Date"
                     value={exp.start_date}
-                    onChange={(e) => updateExperience(index, "start_date", e.target.value)}
+                    onChange={(e) =>
+                      updateExperience(index, "start_date", e.target.value)
+                    }
                     type="month"
-                    required={true}
                   />
                   <Input
                     label="End Date"
                     value={exp.end_date}
-                    onChange={(e) => updateExperience(index, "end_date", e.target.value)}
+                    onChange={(e) =>
+                      updateExperience(index, "end_date", e.target.value)
+                    }
                     type="month"
-                    required={true}
                   />
                   <Input
                     label="Address"
                     value={exp.address}
-                    onChange={(e) => updateExperience(index, "address", e.target.value)}
-                    required={true}
+                    onChange={(e) =>
+                      updateExperience(index, "address", e.target.value)
+                    }
                   />
-
                   {/* Dynamic Job Description Lines */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-purple-300 mb-2">
@@ -601,11 +636,17 @@ const ResumeForm = () => {
                           type="text"
                           placeholder="Description line"
                           value={line || ""}
-                          onChange={(e) => updateJobDescriptionLine(index, lineIdx, e.target.value)}
+                          onChange={(e) =>
+                            updateJobDescriptionLine(index, lineIdx, e.target.value)
+                          }
                           className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                         {exp.job_des.lines.length > 1 && (
-                          <button type="button" onClick={() => removeJobDescriptionLine(index, lineIdx)} className="text-red-400 hover:text-red-300 p-1">
+                          <button
+                            type="button"
+                            onClick={() => removeJobDescriptionLine(index, lineIdx)}
+                            className="text-red-400 hover:text-red-300 p-1"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}
@@ -621,14 +662,14 @@ const ResumeForm = () => {
 
           {/* Projects */}
           <Section title="Projects">
-            {data.projects.projects.map((proj, index) => ( 
+            {data.projects.projects.map((proj, index) => (
               <div
                 key={index}
                 className="border border-white/20 rounded-lg p-6 mb-4"
               >
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-lg font-medium">Project {index + 1}</h4>
-                  {data.projects.projects.length > 1 && ( 
+                  {data.projects.projects.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeProject(index)}
@@ -681,7 +722,11 @@ const ResumeForm = () => {
                           className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                         {proj.project_des.lines.length > 1 && (
-                          <button type="button" onClick={() => removeProjectDescriptionLine(index, lineIdx)} className="text-red-400 hover:text-red-300 p-1">
+                          <button
+                            type="button"
+                            onClick={() => removeProjectDescriptionLine(index, lineIdx)}
+                            className="text-red-400 hover:text-red-300 p-1"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}
@@ -737,11 +782,17 @@ const ResumeForm = () => {
                           type="text"
                           placeholder="Skill"
                           value={item || ""}
-                          onChange={(e) => updateSkillItem(index, itemIdx, e.target.value)}
+                          onChange={(e) =>
+                            updateSkillItem(index, itemIdx, e.target.value)
+                          }
                           className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
                         />
                         {category.items.length > 1 && (
-                          <button type="button" onClick={() => removeSkillItem(index, itemIdx)} className="text-red-400 hover:text-red-300 p-1">
+                          <button
+                            type="button"
+                            onClick={() => removeSkillItem(index, itemIdx)}
+                            className="text-red-400 hover:text-red-300 p-1"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}
@@ -758,7 +809,7 @@ const ResumeForm = () => {
           <div className="text-center pt-6">
             <button
               type="submit"
-              // disabled={isSubmitting || !token} // Disable if not logged in (re-enable if token is used)
+              disabled={isSubmitting}
               className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl shadow-lg transition-all duration-300 font-semibold ${
                 isSubmitting
                   ? "bg-gray-500 cursor-not-allowed"

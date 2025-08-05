@@ -6,7 +6,7 @@ mod middleware;
 use actix_web::{web, App, HttpServer};
 use handlers::resume_handler::handle_resume;
 use handlers::user_handlers::{register, login};
-// use middleware::auth::AuthMiddleware; 
+use middleware::auth::AuthMiddleware; 
 use actix_cors::Cors;
 
 #[actix_web::main]
@@ -34,7 +34,7 @@ async fn main() ->  Result<(), Box<dyn std::error::Error>> {
             // 🔒 Protected resume route (JWT auth)
             .service(
                 web::resource("/resume")
-                    // .wrap(AuthMiddleware)
+                    .wrap(AuthMiddleware)
                     .route(web::post().to(handle_resume)),
             )
     })

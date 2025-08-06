@@ -3,6 +3,9 @@ use crate::utils::resume_utils::latex_utils::latex_escape;
 
 pub fn education_utils(education_schema: &EducationSchema) -> String {
     let mut tex = String::new();
+    if education_schema.educations.is_empty() {
+        return tex;
+    }
     tex.push_str("\\section{Education}\n  \\resumeSubHeadingListStart\n");
 
     for edu in &education_schema.educations {

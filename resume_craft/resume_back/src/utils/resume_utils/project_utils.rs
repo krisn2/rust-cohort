@@ -7,8 +7,11 @@ pub fn project_utils(project_schema: &ProjectSchema) -> String {
         return tex;
     }
     tex.push_str("\\section{Projects}\n  \\resumeSubHeadingListStart\n");
-    
+
     for project in &project_schema.projects {
+        tex.push_str(&format!(
+            "    \\resumeProjectHeading\n"
+        ));
         tex.push_str(&format!(
             "        {{\\textbf{{{}}} $|$ \\emph{{{}}}}}{{{} -- {}}}\n",
             latex_escape(project.name.as_str()),
@@ -16,7 +19,6 @@ pub fn project_utils(project_schema: &ProjectSchema) -> String {
             latex_escape(project.start_date.as_str()),
             latex_escape(project.end_date.as_str()),
         ));
-
         tex.push_str("        \\resumeItemListStart\n");
 
         for item in &project.project_des.lines {

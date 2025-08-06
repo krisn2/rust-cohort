@@ -3,6 +3,9 @@ use crate::utils::resume_utils::latex_utils::latex_escape;
 
 pub fn experience_utils(experience_schema: &ExperienceSchema) -> String {
     let mut tex = String::new();
+    if experience_schema.experiences.is_empty() {
+        return tex;
+    }
     tex.push_str("\\section{Experience}\n  \\resumeSubHeadingListStart\n");
 
     for exp in &experience_schema.experiences {

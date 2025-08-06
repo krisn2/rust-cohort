@@ -10,14 +10,14 @@ use crate::utils::resume_utils::{
 
 
 pub fn resume_utils_fn(resume: &ResumeRequest) -> String {
-    let mut tex = String::new();
-    let personal = &resume.personal;
-    let education_data = &resume.education;
-    let experience_data = &resume.experience;
-    let project_data = &resume.projects;
-    let skills = &resume.skills;
-    tex.push_str(r#"
-    \documentclass[letterpaper,11pt]{article}
+  let mut tex = String::new();
+  let personal = &resume.personal;
+  let education_data = &resume.education;
+  let experience_data = &resume.experience;
+  let project_data = &resume.projects;
+  let skills = &resume.skills;
+  tex.push_str(r#"
+  \documentclass[letterpaper,11pt]{article}
 
 \usepackage{latexsym}
 \usepackage[empty]{fullpage}
@@ -66,7 +66,7 @@ pub fn resume_utils_fn(resume: &ResumeRequest) -> String {
 
 % Sections formatting
 \titleformat{\section}{
-  \vspace{-4pt}\scshape\raggedright\large
+\vspace{-4pt}\scshape\raggedright\large
 }{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
 
 % Ensure that generate pdf is machine readable/ATS parsable
@@ -75,31 +75,31 @@ pub fn resume_utils_fn(resume: &ResumeRequest) -> String {
 %-------------------------
 % Custom commands
 \newcommand{\resumeItem}[1]{
-  \item\small{
-    {#1 \vspace{-2pt}}
-  }
+\item\small{
+  {#1 \vspace{-2pt}}
+}
 }
 
 \newcommand{\resumeSubheading}[4]{
-  \vspace{-2pt}\item
-    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
-      \textbf{#1} & #2 \\
-      \textit{\small#3} & \textit{\small #4} \\
-    \end{tabular*}\vspace{-7pt}
+\vspace{-2pt}\item
+  \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+    \textbf{#1} & #2 \\
+    \textit{\small#3} & \textit{\small #4} \\
+  \end{tabular*}\vspace{-7pt}
 }
 
 \newcommand{\resumeSubSubheading}[2]{
-    \item
-    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
-      \textit{\small#1} & \textit{\small #2} \\
-    \end{tabular*}\vspace{-7pt}
+  \item
+  \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+    \textit{\small#1} & \textit{\small #2} \\
+  \end{tabular*}\vspace{-7pt}
 }
 
 \newcommand{\resumeProjectHeading}[2]{
-    \item
-    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
-      \small#1 & #2 \\
-    \end{tabular*}\vspace{-7pt}
+  \item
+  \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+    \small#1 & #2 \\
+  \end{tabular*}\vspace{-7pt}
 }
 
 \newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
@@ -123,23 +123,23 @@ pub fn resume_utils_fn(resume: &ResumeRequest) -> String {
 %   \href{http://sourabhbajaj.com/}{http://www.sourabhbajaj.com} & Mobile : +1-123-456-7890 \\
 % \end{tabular*}
 
-    "#);
+  "#);
 
-    let header = personal_utils(personal);
-    let education_tex = education_utils(&education_data);
-    let experience_tex = experience_utils(&experience_data);
-    let project_tex = project_utils(&project_data);
-    let skill_tex = skills_utils(&skills);
-    
-    tex.push_str(&header);
-    tex.push_str(&experience_tex);
-    tex.push_str(&project_tex);
-    tex.push_str(&education_tex);
-    tex.push_str(&skill_tex);
+  let header = personal_utils(personal);
+  let education_tex = education_utils(&education_data);
+  let experience_tex = experience_utils(&experience_data);
+  let project_tex = project_utils(&project_data);
+  let skill_tex = skills_utils(&skills);
+  
+  tex.push_str(&header);
+  tex.push_str(&experience_tex);
+  tex.push_str(&project_tex);
+  tex.push_str(&education_tex);
+  tex.push_str(&skill_tex);
 
-    tex.push_str(r#"
-    \end{document}
-    "#);
+  tex.push_str(r#"
+  \end{document}
+  "#);
 
-    tex
+  tex
 }

@@ -2,9 +2,10 @@ mod models;
 mod handlers;
 mod utils;
 mod middleware; 
+mod controllers;
 
 use actix_web::{web, App, HttpServer};
-use handlers::resume_handler::handle_resume;
+use controllers::resume_controller::handle_resume;
 use handlers::user_handlers::{register, login};
 use middleware::auth::AuthMiddleware; 
 use actix_cors::Cors;

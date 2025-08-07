@@ -21,3 +21,8 @@ password-hash = "0.3"
 rand_core = "0.6"
 dotenvy = "0.15"
 actix-cors = "0.7.1"
+
+lopdf = "0.27"             # for PDF text extraction
+reqwest = { version = "0.12", features = ["json"] }  # for calling AI API
+actix-multipart = "0.6"
+sanitize-filename = "0.5"

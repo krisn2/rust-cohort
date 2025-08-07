@@ -9,9 +9,12 @@ use controllers::resume_controller::handle_resume;
 use handlers::user_handlers::{register, login};
 use middleware::auth::AuthMiddleware; 
 use actix_cors::Cors;
+use controllers::ai_controller::improve_projects_ai;
+
 
 #[actix_web::main]
 async fn main() ->  Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv().ok();
 
     let client = mongodb::Client::with_uri_str("mongodb://localhost:27017").await?;
 
@@ -37,6 +40,10 @@ async fn main() ->  Result<(), Box<dyn std::error::Error>> {
                 web::resource("/resume")
                     .wrap(AuthMiddleware)
                     .route(web::post().to(handle_resume)),
+            )
+            .service(
+                web::resource("/ai/improve-projects")
+                    .route(web::post().to(improve_projects_ai)),
             )
     })
     .bind("127.0.0.1:8080")?

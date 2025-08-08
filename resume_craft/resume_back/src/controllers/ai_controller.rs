@@ -1,12 +1,12 @@
 use actix_multipart::Multipart;
 use actix_web::{HttpResponse, Responder};
 use futures_util::StreamExt;
-use std::{fs::File, io::Write};
 use sanitize_filename::sanitize;
+use std::{fs::File, io::Write};
 
+use crate::utils::ai::{send_to_gemini, extract_projects_from_ai_response};
 use crate::utils::pdf::extract_text_from_pdf;
 use crate::utils::resume_parser::extract_projects_from_resume;
-use crate::utils::ai::send_to_gemini;
 
 pub async fn improve_projects_ai(mut payload: Multipart) -> impl Responder {
     let mut resume_path: Option<String> = None;
@@ -20,6 +20,8 @@ pub async fn improve_projects_ai(mut payload: Multipart) -> impl Responder {
 
         let name = field.name().to_string();
 
+        std::fs::create_dir_all("./tmp").expect("Failed to create tmp directory");
+
         // Handle resume PDF upload
         if name == "resume" {
             let content_disposition = field.content_disposition();
@@ -27,18 +29,23 @@ pub async fn improve_projects_ai(mut payload: Multipart) -> impl Responder {
                 .get_filename()
                 .map(|s| s.to_string())
                 .unwrap_or_else(|| "resume.pdf".to_string());
-            
+
             let filename = sanitize(filename);
             let filepath = format!("./tmp/{}", filename);
             let mut file = match File::create(&filepath) {
                 Ok(f) => f,
-                Err(_) => return HttpResponse::InternalServerError().body("Failed to save resume file"),
+                Err(_) => {
+                    return HttpResponse::InternalServerError().body("Failed to save resume file");
+                }
             };
 
             while let Some(chunk) = field.next().await {
                 let data = match chunk {
                     Ok(d) => d,
-                    Err(_) => return HttpResponse::InternalServerError().body("Error reading resume file"),
+                    Err(_) => {
+                        return HttpResponse::InternalServerError()
+                            .body("Error reading resume file");
+                    }
                 };
                 if let Err(_) = file.write_all(&data) {
                     return HttpResponse::InternalServerError().body("Resume file write error");
@@ -54,7 +61,10 @@ pub async fn improve_projects_ai(mut payload: Multipart) -> impl Responder {
             while let Some(chunk) = field.next().await {
                 let data = match chunk {
                     Ok(d) => d,
-                    Err(_) => return HttpResponse::InternalServerError().body("Error reading job description"),
+                    Err(_) => {
+                        return HttpResponse::InternalServerError()
+                            .body("Error reading job description");
+                    }
                 };
                 job_desc.push_str(std::str::from_utf8(&data).unwrap_or(""));
             }
@@ -76,14 +86,23 @@ pub async fn improve_projects_ai(mut payload: Multipart) -> impl Responder {
 
     let parsed_projects = extract_projects_from_resume(&resume_text);
 
-    let prompt = format!(
-        "You are a resume improvement assistant.\n\nJob Description:\n{}\n\nProjects:\n{}\n\nRewrite each project description to better match the job description. Focus on relevance, clarity, and impact.",
-        jd_text,
-        parsed_projects.join("\n\n")
-    );
+   let prompt = format!(
+    "Job Description:\n{}\n\nProjects:\n{}\n\nRewrite each project description to align with the job description. Expand on technical details, emphasize backend architecture, performance improvements, and impact. Respond with only the rewritten project descriptions, one per paragraph, no headings or explanation.",
+    jd_text,
+    parsed_projects.join("\n\n")
+);
+
+
+    // println!("Resume Text:\n{}", resume_text);
+    // println!("Parsed Projects:\n{:?}", parsed_projects);
+    // println!("Job Description:\n{}", jd_text);
 
     match send_to_gemini(prompt).await {
-        Ok(updated_projects) => HttpResponse::Ok().body(updated_projects),
-        Err(e) => HttpResponse::InternalServerError().body(format!("Gemini error: {}", e)),
+    Ok(ai_response) => {
+        let projects_json = extract_projects_from_ai_response(&ai_response);
+        HttpResponse::Ok().json(projects_json)
     }
+    Err(e) => HttpResponse::InternalServerError().body(format!("Gemini error: {}", e)),
+}
+
 }

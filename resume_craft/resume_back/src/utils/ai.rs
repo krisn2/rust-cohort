@@ -38,3 +38,21 @@ pub async fn send_to_gemini(prompt: String) -> Result<String, Box<dyn std::error
 
     Ok(text)
 }
+
+use serde::Serialize;
+
+#[derive(Serialize)]
+pub struct ProjectsJson {
+    pub projects: Vec<String>,
+}
+
+pub fn extract_projects_from_ai_response(ai_response: &str) -> ProjectsJson {
+    let projects: Vec<String> = ai_response
+        .split("\n\n")
+        .map(|p| p.trim().to_string())
+        .filter(|p| !p.is_empty())
+        .collect();
+
+    ProjectsJson { projects }
+}
+

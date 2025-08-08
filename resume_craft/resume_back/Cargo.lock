@@ -2529,6 +2529,7 @@ dependencies = [
  "mongodb",
  "password-hash",
  "rand_core 0.6.4",
+ "regex",
  "reqwest",
  "sanitize-filename",
  "serde",

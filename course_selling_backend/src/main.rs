@@ -1,33 +1,23 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpServer};
 
-
-async fn greeting()-> impl Responder{
-    HttpResponse::Ok().body("Fuck You")
-}
-
-async fn login()-> impl Responder {
-    HttpResponse::Ok().body("your Login")
-}
-
-async fn register() -> impl Responder {
-    HttpResponse::Ok().body("Your Register")
-}
-
-async fn purchase()-> impl Responder {
-    HttpResponse::Ok().body("Courses that you purchased..")
-}
-
+mod routes;
+mod models;
+use routes::{course_route, user_route};
 
 #[actix_web::main]
 async fn main () -> std::io::Result<()> {
     HttpServer::new(||{
         App::new()
-            .route("/greet", web::get().to(greeting))
+            // .route("/greet", web::get().to(greeting))
             .service(
                 web::scope("/user")
-                .route("/login", web::post().to(login))
-                .route("/register", web::post().to(register))
-                .route("/purchase", web::get().to(purchase))
+                .route("/login", web::post().to(user_route::login))
+                .route("/register", web::post().to(user_route::register))
+            )
+            .service(
+                web::scope("/course")
+                .route("/purchase", web::post().to(course_route::purchase))
+                .route("/preview", web::get().to(course_route::preview))
             )
     })
     .bind("127.0.0.1:7000")?

@@ -15,8 +15,8 @@ use controllers::ai_controller::improve_projects_ai;
 #[actix_web::main]
 async fn main() ->  Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
-
-    let client = mongodb::Client::with_uri_str("mongodb://localhost:27017").await?;
+    let mongo_url = std::env::var("MONGO_URL")?;
+    let client = mongodb::Client::with_uri_str(&mongo_url).await?;
 
     HttpServer::new(move || {
         // let cors = Cors::default().allow_any_header().allow_any_method().allow_any_origin();

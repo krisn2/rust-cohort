@@ -17,9 +17,9 @@ const App = () => {
         <Route
           path="/build"
           element={
-            // <PrivateRoute>
+            <PrivateRoute>
               <ResumeForm />
-            // </PrivateRoute>
+            </PrivateRoute>
           }
         />
       </Routes>

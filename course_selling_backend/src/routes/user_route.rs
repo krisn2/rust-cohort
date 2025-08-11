@@ -1,9 +1,34 @@
-use actix_web::{Responder, HttpResponse};
 
-pub async fn login()-> impl Responder {
-    HttpResponse::Ok().body("your Login")
+use actix_web::{web, HttpResponse, Responder};
+use mongodb::{bson::doc, Client};
+
+use crate::models::user_model::{LoginUser, Users};
+
+pub async fn register(user_data:web::Json<Users>, db_client:web::Data<Client>)-> impl Responder {
+
+    let user = user_data.into_inner();
+    let collection = db_client.database("course_selling").collection::<Users>("users");
+
+    match collection.insert_one(user).await {
+        Ok(m) => {
+            HttpResponse::Ok().body(format!("user is Register: {:?}",m))
+        }
+        Err(er) => {
+            HttpResponse::Ok().body(format!("Mongo insert Error {er}"))
+        }
+    }
+    
 }
 
-pub async fn register() -> impl Responder {
-    HttpResponse::Ok().body("Your Register")
+pub async fn login(db_client:web::Data<Client>, cred: web::Json<LoginUser>) -> impl Responder {
+
+    let col = db_client.database("course_selling").collection::<Users>("users") ;
+    // HttpResponse::Ok().body("Your Register")
+    let user = col.find_one(doc! {"email":&cred.email}).await.unwrap_or(None);
+
+    if let Some(user) = user {
+       return HttpResponse::Ok().body(format!("user_id:{:?}",user.id))
+    }
+    HttpResponse::Unauthorized().body("Invalid email or password")
+
 }

@@ -16,6 +16,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
     let mongo_url = std::env::var("MONGO_URL")?;
     let origin = std::env::var("ORIGIN")?;
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string()); // ✅ get PORT from env
+
     let client = mongodb::Client::with_uri_str(&mongo_url).await?;
 
     HttpServer::new(move || {
@@ -30,18 +32,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .app_data(web::Data::new(client.clone()))
             .service(web::resource("/register").route(web::post().to(register)))
             .service(web::resource("/login").route(web::post().to(login)))
-            // 🔒 Protected resume route (JWT auth)
             .service(
                 web::resource("/resume")
                     .wrap(AuthMiddleware)
                     .route(web::post().to(handle_resume)),
             )
             .service(
-                web::resource("/ai/improve-projects").wrap(AuthMiddleware).route(web::post().to(improve_projects_ai)),
+                web::resource("/ai/improve-projects")
+                    .wrap(AuthMiddleware)
+                    .route(web::post().to(improve_projects_ai)),
             )
     })
-    .bind("127.0.0.1:8080")?
+    .bind(format!("0.0.0.0:{}", port))? // ✅ listen on all interfaces
     .run()
     .await
     .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)
 }
+

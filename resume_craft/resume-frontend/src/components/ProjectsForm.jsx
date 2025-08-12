@@ -25,15 +25,15 @@ const ProjectsForm = ({ data, updateField, addItem, removeItem, errors }) => {
               label="Project Name"
               value={project.name}
               onChange={(e) =>
-                updateField(`project.projects.${idx}.name`, e.target.value)
+                updateField(`projects.projects.${idx}.name`, e.target.value)
               }
             />
             <Input
-              label="Project URL"
+              label="Project tech stack"
               value={project.tech_stack}
               onChange={(e) =>
                 updateField(
-                  `project.projects.${idx}.tech_stack`,
+                  `projects.projects.${idx}.tech_stack`,
                   e.target.value
                 )
               }
@@ -44,7 +44,7 @@ const ProjectsForm = ({ data, updateField, addItem, removeItem, errors }) => {
               value={project.start_date}
               onChange={(e) =>
                 updateField(
-                  `project.projects.${idx}.start_date`,
+                  `projects.projects.${idx}.start_date`,
                   e.target.value
                 )
               }
@@ -54,7 +54,7 @@ const ProjectsForm = ({ data, updateField, addItem, removeItem, errors }) => {
               type="month"
               value={project.end_date}
               onChange={(e) =>
-                updateField(`project.projects.${idx}.end_date`, e.target.value)
+                updateField(`projects.projects.${idx}.end_date`, e.target.value)
               }
             />
           </div>
@@ -71,7 +71,7 @@ const ProjectsForm = ({ data, updateField, addItem, removeItem, errors }) => {
                   value={line || ""}
                   onChange={(e) =>
                     updateField(
-                      `project.projects.${idx}.project_des.lines.${lineIdx}`,
+                      `projects.projects.${idx}.project_des.lines.${lineIdx}`,
                       e.target.value
                     )
                   }

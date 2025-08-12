@@ -18,62 +18,67 @@ export default function ResumeForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
 
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const validation = validateResume(state);
+  if (Object.keys(validation).length > 0) {
+    setErrors(validation);
+    setSubmitStatus({ type: "error", message: "Please fix validation errors." });
+    return;
+  }
+  setErrors({});
+  setIsSubmitting(true);
+  setSubmitStatus(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const validation = validateResume(state);
-    if (Object.keys(validation).length > 0) {
-      setErrors(validation);
-      setSubmitStatus({ type: "error", message: "Please fix validation errors." });
-      return;
-    }
-    setErrors({});
-    setIsSubmitting(true);
-    setSubmitStatus(null);
+  try {
+    const payload = normalizeResumeData(state);
+    console.log("Submitting payload:", payload);
 
-    try {
-      const payload = normalizeResumeData(state);
-      // debug
-      console.log("Submitting payload:", payload);
+    // Get token from localStorage
+    const token = localStorage.getItem("auth_token");
 
-      const res = await axios.post(`${import.meta.env.VITE_API}/resume`, payload, {
-        responseType: "blob",
-        headers: { "Content-Type": "application/json" },
-      });
+    const res = await axios.post(`${import.meta.env.VITE_API}/resume`, payload, {
+      responseType: "blob",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),  // Add auth header if token exists
+      },
+    });
 
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "resume.pdf");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "resume.pdf");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 
-      setSubmitStatus({ type: "success", message: "🎉 Resume downloaded successfully!" });
-    } catch (err) {
-      console.error("Submission error", err);
-      let message = `❌ Failed to download resume PDF. ${err.message || ""}`;
-      if (err.response && err.response.data) {
-        try {
-          const reader = new FileReader();
-          reader.onload = function () {
-            try {
-              const json = JSON.parse(reader.result);
-              message = json.message || message;
-              setSubmitStatus({ type: "error", message });
-            } catch {
-              setSubmitStatus({ type: "error", message: `Server responded with status ${err.response.status}` });
-            }
-          };
-          reader.readAsText(new Blob([err.response.data]));
-        } catch {
-          setSubmitStatus({ type: "error", message });
-        }
-      } else setSubmitStatus({ type: "error", message });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    setSubmitStatus({ type: "success", message: "🎉 Resume downloaded successfully!" });
+  } catch (err) {
+    console.error("Submission error", err);
+    let message = `❌ Failed to download resume PDF. ${err.message || ""}`;
+    if (err.response && err.response.data) {
+      try {
+        const reader = new FileReader();
+        reader.onload = function () {
+          try {
+            const json = JSON.parse(reader.result);
+            message = json.message || message;
+            setSubmitStatus({ type: "error", message });
+          } catch {
+            setSubmitStatus({ type: "error", message: `Server responded with status ${err.response.status}` });
+          }
+        };
+        reader.readAsText(new Blob([err.response.data]));
+      } catch {
+        setSubmitStatus({ type: "error", message });
+      }
+    } else setSubmitStatus({ type: "error", message });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen py-16 pt-28 px-4 sm:px-10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-inter">

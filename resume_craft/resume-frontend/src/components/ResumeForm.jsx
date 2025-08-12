@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import useResumeReducer, { initialState } from "../hooks/useResumeReducer";
+import useResumeReducer from "../hooks/useResumeReducer";
 import { validateResume } from "../utils/validators";
 import normalizeResumeData from "../utils/normalize";
 import PersonalForm from "./PersonalForm";
@@ -90,27 +90,27 @@ export default function ResumeForm() {
 
         <form onSubmit={handleSubmit} className="space-y-10">
           <Section title="Personal Information">
-            <PersonalForm data={state.personal} updateField={updateField} errors={errors} />
+            <PersonalForm data={state} updateField={updateField} errors={errors} />
           </Section>
 
           <Section title="Education">
-            <EducationForm data={state.education} updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
+            <EducationForm data={state} updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
           </Section>
 
           <Section title="Experience (Optional)">
-            <ExperienceForm data={state.experience} updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
+            <ExperienceForm data={state} updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
           </Section>
 
           <Section title="Projects (Optional)">
-            <ProjectsForm data={state.projects } updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
+            <ProjectsForm data={state} updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
           </Section>
 
           <Section title="Skills (Optional)">
-            <SkillsForm data={state.skills} updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
+            <SkillsForm data={state} updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
           </Section>
 
           <Section title="Certifications (Optional)">
-            <CertificationsForm data={state.certifications} updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
+            <CertificationsForm data={state} updateField={updateField} addItem={addItem} removeItem={removeItem} errors={errors} />
           </Section>
 
           <div className="text-center pt-6">

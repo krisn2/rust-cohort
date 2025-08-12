@@ -44,7 +44,7 @@ export function validateResume(state) {
   });
 
   // projects: if project is partially filled require name
-  (state.projects?.projects || []).forEach((proj, i) => {
+  (state.project?.projects || []).forEach((proj, i) => {
     if (!isEmpty(proj.name) || !isEmpty(proj.tech_stack) || (proj.project_des?.lines || []).some(l => !isEmpty(l))) {
       if (isEmpty(proj.name)) errors[`projects.${i}.name`] = "Project name is required.";
     }

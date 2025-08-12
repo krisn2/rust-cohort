@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 pub struct ResumeRequest {
     pub personal: Personal,
     pub education: EducationSchema,
-    pub experience: ExperienceSchema,
-    pub projects: ProjectSchema,
+    pub experience:  Option<ExperienceSchema>,
+    pub projects:  Option<ProjectSchema>,
     pub skills: SkillSchema,
 }

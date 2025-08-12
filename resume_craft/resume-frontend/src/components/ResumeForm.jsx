@@ -2,6 +2,35 @@ import { useState } from "react";
 import { Plus, Trash2, Save, AlertCircle } from "lucide-react";
 import axios from "axios";
 
+// Helper to check if a job/project description lines array is empty
+const areDescriptionLinesEmpty = (lines) => {
+  // Returns true if lines is null/undefined, empty, or contains only one empty string
+  return !lines || lines.length === 0 || (lines.length === 1 && lines[0].trim() === "");
+};
+
+// Helper to check if an experience object is entirely empty
+const isEmptyExperience = (exp) => {
+  return (
+    (exp.position || "").trim() === "" &&
+    (exp.start_date || "").trim() === "" &&
+    (exp.end_date || "").trim() === "" &&
+    (exp.company_name || "").trim() === "" &&
+    (exp.address || "").trim() === "" &&
+    areDescriptionLinesEmpty(exp.job_des ? exp.job_des.lines : [])
+  );
+};
+
+// Helper to check if a project object is entirely empty
+const isEmptyProject = (proj) => {
+  return (
+    (proj.name || "").trim() === "" &&
+    (proj.tech_stack || "").trim() === "" &&
+    (proj.start_date || "").trim() === "" &&
+    (proj.end_date || "").trim() === "" &&
+    areDescriptionLinesEmpty(proj.project_des ? proj.project_des.lines : [])
+  );
+};
+
 const ResumeForm = () => {
   // State for authentication token, loaded from localStorage (commented out for simplicity as per HTML form)
   const token = localStorage.getItem("auth_token") || "";
@@ -131,6 +160,7 @@ const ResumeForm = () => {
 
   const addJobDescriptionLine = (expIndex) => {
     const updatedExperiences = [...data.experience.experiences];
+    // Ensure job_des and job_des.lines exist
     if (!updatedExperiences[expIndex].job_des) {
       updatedExperiences[expIndex].job_des = { lines: [] };
     }
@@ -143,8 +173,16 @@ const ResumeForm = () => {
 
   const removeJobDescriptionLine = (expIndex, lineIndex) => {
     const updatedExperiences = [...data.experience.experiences];
-    if (updatedExperiences[expIndex].job_des.lines.length > 1) {
+    // Check if lines exist and have more than one item before removal
+    if (updatedExperiences[expIndex].job_des && updatedExperiences[expIndex].job_des.lines.length > 1) {
       updatedExperiences[expIndex].job_des.lines.splice(lineIndex, 1);
+      setData((prev) => ({
+        ...prev,
+        experience: { experiences: updatedExperiences },
+      }));
+    } else if (updatedExperiences[expIndex].job_des && updatedExperiences[expIndex].job_des.lines.length === 1) {
+      // If only one line left, clear its content instead of removing to keep an input field
+      updatedExperiences[expIndex].job_des.lines[0] = "";
       setData((prev) => ({
         ...prev,
         experience: { experiences: updatedExperiences },
@@ -192,11 +230,29 @@ const ResumeForm = () => {
           ),
         },
       }));
+    } else if (data.experience.experiences.length === 1) {
+      // If only one experience, clear its content rather than removing the entire section
+      setData((prev) => ({
+        ...prev,
+        experience: {
+          experiences: [
+            {
+              position: "",
+              start_date: "",
+              end_date: "",
+              company_name: "",
+              address: "",
+              job_des: {
+                lines: [""],
+              },
+            },
+          ],
+        },
+      }));
     }
   };
 
   // Project Updates
-  // Ensure this uses 'projects' not 'project' to match state structure
   const updateProject = (index, field, value) => {
     const updated = [...data.projects.projects];
     updated[index][field] = value;
@@ -208,6 +264,7 @@ const ResumeForm = () => {
 
   const addProjectDescriptionLine = (projIndex) => {
     const updatedProjects = [...data.projects.projects];
+    // Ensure project_des and project_des.lines exist
     if (!updatedProjects[projIndex].project_des) {
       updatedProjects[projIndex].project_des = { lines: [] };
     }
@@ -220,8 +277,16 @@ const ResumeForm = () => {
 
   const removeProjectDescriptionLine = (projIndex, lineIndex) => {
     const updatedProjects = [...data.projects.projects];
-    if (updatedProjects[projIndex].project_des.lines.length > 1) {
+    // Check if lines exist and have more than one item before removal
+    if (updatedProjects[projIndex].project_des && updatedProjects[projIndex].project_des.lines.length > 1) {
       updatedProjects[projIndex].project_des.lines.splice(lineIndex, 1);
+      setData((prev) => ({
+        ...prev,
+        projects: { projects: updatedProjects },
+      }));
+    } else if (updatedProjects[projIndex].project_des && updatedProjects[projIndex].project_des.lines.length === 1) {
+      // If only one line left, clear its content instead of removing to keep an input field
+      updatedProjects[projIndex].project_des.lines[0] = "";
       setData((prev) => ({
         ...prev,
         projects: { projects: updatedProjects },
@@ -242,9 +307,8 @@ const ResumeForm = () => {
     setData((prev) => ({
       ...prev,
       projects: {
-        // Use 'projects' here
         projects: [
-          ...prev.projects.projects, // Use 'projects' here
+          ...prev.projects.projects,
           {
             name: "",
             tech_stack: "",
@@ -261,12 +325,28 @@ const ResumeForm = () => {
 
   const removeProject = (index) => {
     if (data.projects.projects.length > 1) {
-      // Use 'projects' here
       setData((prev) => ({
         ...prev,
         projects: {
-          // Use 'projects' here
-          projects: prev.projects.projects.filter((_, i) => i !== index), // Use 'projects' here
+          projects: prev.projects.projects.filter((_, i) => i !== index),
+        },
+      }));
+    } else if (data.projects.projects.length === 1) {
+      // If only one project, clear its content rather than removing the entire section
+      setData((prev) => ({
+        ...prev,
+        projects: {
+          projects: [
+            {
+              name: "",
+              tech_stack: "",
+              start_date: "",
+              end_date: "",
+              project_des: {
+                lines: [""],
+              },
+            },
+          ],
         },
       }));
     }
@@ -284,6 +364,7 @@ const ResumeForm = () => {
 
   const addSkillItem = (catIndex) => {
     const updatedCategories = [...data.skills.categories];
+    // Ensure items array exists
     if (!updatedCategories[catIndex].items) {
       updatedCategories[catIndex].items = [];
     }
@@ -296,8 +377,16 @@ const ResumeForm = () => {
 
   const removeSkillItem = (catIndex, itemIndex) => {
     const updatedCategories = [...data.skills.categories];
-    if (updatedCategories[catIndex].items.length > 1) {
+    // Check if items array exists and has more than one item before removal
+    if (updatedCategories[catIndex].items && updatedCategories[catIndex].items.length > 1) {
       updatedCategories[catIndex].items.splice(itemIndex, 1);
+      setData((prev) => ({
+        ...prev,
+        skills: { categories: updatedCategories },
+      }));
+    } else if (updatedCategories[catIndex].items && updatedCategories[catIndex].items.length === 1) {
+      // If only one item left, clear its content instead of removing to keep an input field
+      updatedCategories[catIndex].items[0] = "";
       setData((prev) => ({
         ...prev,
         skills: { categories: updatedCategories },
@@ -337,6 +426,19 @@ const ResumeForm = () => {
           categories: prev.skills.categories.filter((_, i) => i !== index),
         },
       }));
+    } else if (data.skills.categories.length === 1) {
+      // If only one category, clear its content rather than removing the entire section
+      setData((prev) => ({
+        ...prev,
+        skills: {
+          categories: [
+            {
+              category_name: "",
+              items: [""],
+            },
+          ],
+        },
+      }));
     }
   };
 
@@ -347,34 +449,56 @@ const ResumeForm = () => {
       return "Please fill in required personal information (Name, Email, Phone)";
     }
     // Check if token exists before submission (if token is enabled)
-    if (!token) {
-      return "An authentication token is required to submit your resume. Please ensure you are logged in.";
-    }
+    // if (!token) {
+    //   return "An authentication token is required to submit your resume. Please ensure you are logged in.";
+    // }
     return null;
   };
 
+  // Normalizes the resume data before sending to backend, removing empty optional sections
   const normalizeResumeData = (data) => {
-    const normalizedPersonal = { ...data.personal };
+    const normalizedPayload = { ...data };
+
+    // Personal: Set empty strings to null for optional personal fields
     ["web_url", "linkedin_url", "github_name", "github_url"].forEach((key) => {
-      if (normalizedPersonal[key]?.trim() === "")
-        normalizedPersonal[key] = null;
+      if (normalizedPayload.personal[key]?.trim() === "") {
+        normalizedPayload.personal[key] = null;
+      }
     });
 
-    // Ensure we are normalizing data.projects.projects
-    const normalizedProjects = data.projects.projects.map((project) => {
-      return {
-        ...project,
-        tech_stack:
-          project.tech_stack?.trim() === "" ? null : project.tech_stack,
-      };
-    });
+    // Experience: Filter out empty experiences. If all are empty, omit the 'experience' key.
+    const filteredExperiences = data.experience.experiences.filter(exp => !isEmptyExperience(exp));
+    if (filteredExperiences.length > 0) {
+      normalizedPayload.experience = { experiences: filteredExperiences };
+    } else {
+      delete normalizedPayload.experience; // Omit the entire experience key if empty
+    }
 
-    return {
-      ...data,
-      personal: normalizedPersonal,
-      projects: { projects: normalizedProjects }, // Use 'projects' here
-    };
+    // Projects: Filter out empty projects. If all are empty, omit the 'projects' key.
+    const filteredProjects = data.projects.projects.filter(proj => !isEmptyProject(proj));
+    if (filteredProjects.length > 0) {
+      normalizedPayload.projects = { projects: filteredProjects };
+    } else {
+      delete normalizedPayload.projects; // Omit the entire projects key if empty
+    }
+
+    // Skills: Filter out empty skill items and categories. If all are empty, omit the 'skills' key.
+    const normalizedSkillsCategories = data.skills.categories.map(cat => ({
+      ...cat,
+      // Filter out empty skill items
+      items: cat.items.filter(item => (item || "").trim() !== "")
+    // Filter out categories where the name is empty or all items are empty after filtering
+    })).filter(cat => (cat.category_name || "").trim() !== "" && cat.items.length > 0);
+
+    if (normalizedSkillsCategories.length > 0) {
+      normalizedPayload.skills = { categories: normalizedSkillsCategories };
+    } else {
+      delete normalizedPayload.skills; // Omit the entire skills key if empty
+    }
+
+    return normalizedPayload;
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -392,6 +516,8 @@ const ResumeForm = () => {
       const payload = normalizeResumeData(data);
       console.log("📦 Payload to submit:", payload);
 
+      // Removed token from headers for simplicity as per user's original comment (commented out)
+      // If your backend requires an API key, ensure import.meta.env.VITE_API is set correctly
       const res = await axios.post(
         `${import.meta.env.VITE_API}/resume`,
         payload,
@@ -399,7 +525,7 @@ const ResumeForm = () => {
           responseType: "blob",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Uncomment if token needed
+            // Authorization: `Bearer ${token}`, // Uncomment if token needed
           },
         }
       );
@@ -455,7 +581,7 @@ const ResumeForm = () => {
   };
 
   return (
-    <div className="min-h-screen py-16 pt-28 px-4 sm:px-10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+    <div className="min-h-screen py-16 pt-28 px-4 sm:px-10 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white font-inter">
       <div className="max-w-4xl mx-auto bg-white/10 p-8 rounded-3xl shadow-xl backdrop-blur-xl border border-white/20">
         <h1 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
           Build Your Resume
@@ -512,7 +638,8 @@ const ResumeForm = () => {
                     <button
                       type="button"
                       onClick={() => removeEducation(index)}
-                      className="text-red-400 hover:text-red-300 p-1"
+                      className="text-red-400 hover:text-red-300 p-1 rounded-full hover:bg-white/10 transition-all"
+                      aria-label={`Remove education ${index + 1}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -577,15 +704,16 @@ const ResumeForm = () => {
                   <h4 className="text-lg font-medium">
                     Experience {index + 1}
                   </h4>
-                  {data.experience.experiences.length > 1 && (
+                  {data.experience.experiences.length > 1 || !isEmptyExperience(exp) ? (
                     <button
                       type="button"
                       onClick={() => removeExperience(index)}
-                      className="text-red-400 hover:text-red-300 p-1"
+                      className="text-red-400 hover:text-red-300 p-1 rounded-full hover:bg-white/10 transition-all"
+                      aria-label={`Remove experience ${index + 1}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                  )}
+                  ) : null}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
@@ -639,13 +767,14 @@ const ResumeForm = () => {
                           onChange={(e) =>
                             updateJobDescriptionLine(index, lineIdx, e.target.value)
                           }
-                          className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                          className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200"
                         />
-                        {exp.job_des.lines.length > 1 && (
+                        {(exp.job_des.lines.length > 1 || (exp.job_des.lines.length === 1 && line.trim() !== "")) && (
                           <button
                             type="button"
                             onClick={() => removeJobDescriptionLine(index, lineIdx)}
-                            className="text-red-400 hover:text-red-300 p-1"
+                            className="text-red-400 hover:text-red-300 p-1 rounded-full hover:bg-white/10 transition-all"
+                            aria-label="Remove description line"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -661,7 +790,7 @@ const ResumeForm = () => {
           </Section>
 
           {/* Projects */}
-          <Section title="Projects">
+          <Section title="Projects (Optional)">
             {data.projects.projects.map((proj, index) => (
               <div
                 key={index}
@@ -669,42 +798,39 @@ const ResumeForm = () => {
               >
                 <div className="flex justify-between items-center mb-4">
                   <h4 className="text-lg font-medium">Project {index + 1}</h4>
-                  {data.projects.projects.length > 1 && (
+                  {data.projects.projects.length > 1 || !isEmptyProject(proj) ? (
                     <button
                       type="button"
                       onClick={() => removeProject(index)}
-                      className="text-red-400 hover:text-red-300 p-1"
+                      className="text-red-400 hover:text-red-300 p-1 rounded-full hover:bg-white/10 transition-all"
+                      aria-label={`Remove project ${index + 1}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                  )}
+                  ) : null}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
                     label="Project Name"
                     value={proj.name}
                     onChange={(e) => updateProject(index, "name", e.target.value)}
-                    required={true}
                   />
                   <Input
                     label="Tech Stack"
                     value={proj.tech_stack}
                     onChange={(e) => updateProject(index, "tech_stack", e.target.value)}
-                    required={true}
                   />
                   <Input
                     label="Start Date"
                     value={proj.start_date}
                     onChange={(e) => updateProject(index, "start_date", e.target.value)}
                     type="month"
-                    required={true}
                   />
                   <Input
                     label="End Date"
                     value={proj.end_date}
                     onChange={(e) => updateProject(index, "end_date", e.target.value)}
                     type="month"
-                    required={true}
                   />
 
                   {/* Dynamic Project Description Lines */}
@@ -719,13 +845,14 @@ const ResumeForm = () => {
                           placeholder="Description line"
                           value={line || ""}
                           onChange={(e) => updateProjectDescriptionLine(index, lineIdx, e.target.value)}
-                          className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                          className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200"
                         />
-                        {proj.project_des.lines.length > 1 && (
+                        {(proj.project_des.lines.length > 1 || (proj.project_des.lines.length === 1 && line.trim() !== "")) && (
                           <button
                             type="button"
                             onClick={() => removeProjectDescriptionLine(index, lineIdx)}
-                            className="text-red-400 hover:text-red-300 p-1"
+                            className="text-red-400 hover:text-red-300 p-1 rounded-full hover:bg-white/10 transition-all"
+                            aria-label="Remove description line"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -741,7 +868,7 @@ const ResumeForm = () => {
           </Section>
 
           {/* Skills */}
-          <Section title="Skills">
+          <Section title="Skills (Optional)">
             {data.skills.categories.map((category, index) => (
               <div
                 key={index}
@@ -751,15 +878,16 @@ const ResumeForm = () => {
                   <h4 className="text-lg font-medium">
                     Skill Category {index + 1}
                   </h4>
-                  {data.skills.categories.length > 1 && (
+                  {data.skills.categories.length > 1 || !((category.category_name || "").trim() === "" && areDescriptionLinesEmpty(category.items)) ? (
                     <button
                       type="button"
                       onClick={() => removeSkillCategory(index)}
-                      className="text-red-400 hover:text-red-300 p-1"
+                      className="text-red-400 hover:text-red-300 p-1 rounded-full hover:bg-white/10 transition-all"
+                      aria-label={`Remove skill category ${index + 1}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
-                  )}
+                  ) : null}
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
@@ -769,7 +897,6 @@ const ResumeForm = () => {
                       updateSkillCategoryName(index, e.target.value)
                     }
                     placeholder="e.g., Programming Languages"
-                    required={true} // Category name is required in HTML
                   />
                   {/* Dynamic Skill Items */}
                   <div className="md:col-span-2">
@@ -785,13 +912,14 @@ const ResumeForm = () => {
                           onChange={(e) =>
                             updateSkillItem(index, itemIdx, e.target.value)
                           }
-                          className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                          className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all duration-200"
                         />
-                        {category.items.length > 1 && (
+                        {(category.items.length > 1 || (category.items.length === 1 && item.trim() !== "")) && (
                           <button
                             type="button"
                             onClick={() => removeSkillItem(index, itemIdx)}
-                            className="text-red-400 hover:text-red-300 p-1"
+                            className="text-red-400 hover:text-red-300 p-1 rounded-full hover:bg-white/10 transition-all"
+                            aria-label="Remove skill item"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

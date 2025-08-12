@@ -127,8 +127,14 @@ pub fn resume_utils_fn(resume: &ResumeRequest) -> String {
 
   let header = personal_utils(personal);
   let education_tex = education_utils(&education_data);
-  let experience_tex = experience_utils(&experience_data);
-  let project_tex = project_utils(&project_data);
+  let experience_tex = match experience_data {
+      Some(exp) => experience_utils(exp),
+      None => String::new(),
+  };
+  let project_tex = match project_data {
+      Some(projects) => project_utils(projects),
+      None => String::new(),
+  };
   let skill_tex = skills_utils(&skills);
   
   tex.push_str(&header);

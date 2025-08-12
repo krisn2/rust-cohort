@@ -5,7 +5,7 @@ import Hero from "./components/Hero";
 import ResumeForm from "./components/ResumeForm";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
-// import PrivateRoute from "./components/PrivateRoute";
+import PrivateRoute from "./components/PrivateRoute";
 const App = () => {
   return (
     <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 h-max">

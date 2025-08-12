@@ -2,31 +2,93 @@ use crate::models::profile::Personal;
 use crate::utils::resume_utils::latex_utils::latex_escape;
 
 pub fn personal_utils(personal_info: &Personal) -> String {
-    let mut web_site :&str = " ";
-    let web_url = personal_info.web_url.as_deref().unwrap_or("");
+    let mut tex = String::new();
 
-    if web_url.is_empty() {
-        web_site = " ";
+    // Start center block
+    tex.push_str("\\begin{center}\n");
+
+    // Full name
+    tex.push_str(&format!(
+        "\\textbf{{\\Huge \\scshape {}}} \\\\\n",
+        latex_escape(personal_info.fullname.as_str())
+    ));
+
+    // Spacer
+    tex.push_str("\\vspace{1pt}\n\\small ");
+
+    let mut details = Vec::new();
+
+    // Number
+    if !personal_info.number.trim().is_empty() {
+        details.push(latex_escape(personal_info.number.as_str()));
     }
 
-    format!(
-        r#"
-\begin{{center}}
-\textbf{{\Huge \scshape {fullname}}} \\
-\vspace{{1pt}}
-\small {number} $|$ \href{{mailto:{email}}}{{\underline{{{email}}}}} $|$
-\href{{{web_url}}}{{\underline{{{web_site}}}}} $|$
-\href{{{linkedin_url}}}{{\underline{{{linkedin_name}}}}} $|$
-\href{{{github_url}}}{{\underline{{{github_name}}}}}
-\end{{center}}
-"#,
-        fullname = latex_escape(personal_info.fullname.as_str()),
-        number = latex_escape(personal_info.number.as_str()),
-        email = latex_escape(personal_info.email.as_str()),
-        web_url = latex_escape(personal_info.web_url.as_deref().unwrap_or("")),
-        linkedin_url = latex_escape(personal_info.linkedin_url.as_deref().unwrap_or("")),
-        linkedin_name = latex_escape(personal_info.linkedin_name.as_deref().unwrap_or("")),
-        github_url = latex_escape(personal_info.github_url.as_deref().unwrap_or("")),
-        github_name = latex_escape(personal_info.github_name.as_deref().unwrap_or("")),
-    )
+    // Email
+    if !personal_info.email.trim().is_empty() {
+        let escaped_email = latex_escape(personal_info.email.as_str());
+        details.push(format!(
+            "\\href{{mailto:{0}}}{{\\underline{{{0}}}}}",
+            escaped_email
+        ));
+    }
+
+    // Website
+    if let Some(url) = personal_info.web_url.as_deref() {
+        if !url.trim().is_empty() {
+            let escaped_url = latex_escape(url);
+            details.push(format!(
+                "\\href{{{}}}{{\\underline{{{}}}}}",
+                escaped_url, escaped_url
+            ));
+        }
+    }
+
+    // LinkedIn
+    if let Some(url) = personal_info.linkedin_url.as_deref() {
+        if !url.trim().is_empty() {
+            let name = latex_escape(
+                personal_info
+                    .linkedin_name
+                    .as_deref()
+                    .unwrap_or(url)
+            );
+            details.push(format!(
+                "\\href{{{}}}{{\\underline{{{}}}}}",
+                latex_escape(url),
+                name
+            ));
+        }
+    }
+
+    // GitHub
+    if let Some(url) = personal_info.github_url.as_deref() {
+        if !url.trim().is_empty() {
+            let name = latex_escape(
+                personal_info
+                    .github_name
+                    .as_deref()
+                    .unwrap_or(url)
+            );
+            details.push(format!(
+                "\\href{{{}}}{{\\underline{{{}}}}}",
+                latex_escape(url),
+                name
+            ));
+        }
+    }
+
+    // Address
+    if let Some(addr) = personal_info.address.as_deref() {
+        if !addr.trim().is_empty() {
+            details.push(latex_escape(addr));
+        }
+    }
+
+    // Join details with $|$ separator
+    tex.push_str(&details.join(" $|$ "));
+
+    // End center block
+    tex.push_str("\n\\end{center}\n");
+
+    tex
 }

@@ -4,6 +4,7 @@ use super::{
     profile::Personal,
     projects::ProjectSchema,
     skills::SkillSchema,
+    certifications::CertificationSchema,
 };
 use serde::{Deserialize, Serialize};
 
@@ -14,5 +15,6 @@ pub struct ResumeRequest {
     pub education: EducationSchema,
     pub experience:  Option<ExperienceSchema>,
     pub projects:  Option<ProjectSchema>,
-    pub skills: SkillSchema,
+    pub skills:  Option<SkillSchema>,
+    pub certifications:  Option<CertificationSchema>,
 }

@@ -1,3 +1,4 @@
+
 use crate::models::resume::ResumeRequest;
 use crate::utils::resume_utils::{
     personal_utils::personal_utils,
@@ -5,6 +6,7 @@ use crate::utils::resume_utils::{
     experience_utils::experience_utils,
     project_utils::project_utils,
     skill_utils::skills_utils,
+    certifications_utils::certifications_utils,
 };
 
 
@@ -16,6 +18,7 @@ pub fn resume_utils_fn(resume: &ResumeRequest) -> String {
   let experience_data = &resume.experience;
   let project_data = &resume.projects;
   let skills = &resume.skills;
+  let certifications = &resume.certifications;
   tex.push_str(r#"
   \documentclass[letterpaper,11pt]{article}
 
@@ -135,13 +138,20 @@ pub fn resume_utils_fn(resume: &ResumeRequest) -> String {
       Some(projects) => project_utils(projects),
       None => String::new(),
   };
-  let skill_tex = skills_utils(&skills);
-  
+  let skill_tex = match skills {
+      Some(skills) => skills_utils(skills),
+      None => String::new(),
+  };
+  let cert_tex = match certifications {
+      Some(certifications) => certifications_utils(certifications),
+      None => String::new(),
+  };
   tex.push_str(&header);
   tex.push_str(&experience_tex);
   tex.push_str(&project_tex);
   tex.push_str(&education_tex);
   tex.push_str(&skill_tex);
+  tex.push_str(&cert_tex);
 
   tex.push_str(r#"
   \end{document}

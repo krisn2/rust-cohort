@@ -6,3 +6,4 @@ pub mod profile;
 pub mod common;
 pub mod resume;
 pub mod users;
+pub mod certifications;

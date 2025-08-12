@@ -18,7 +18,7 @@ const Login = () => {
       });
       console.log(data.token);
       localStorage.setItem("auth_token", data.token);
-      alert("✅ Logged in successfully!");
+      // alert("✅ Logged in successfully!");
       navigate("/build");
     } catch (err) {
       alert(err.response?.data?.error || "❌ Login failed.");

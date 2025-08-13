@@ -2,7 +2,7 @@ use actix_web::{web, App, HttpServer};
 
 mod routes;
 mod models;
-use routes::{course_route, user_route};
+use routes::{course_route, user_route, admin_route};
 
 #[actix_web::main]
 async fn main () -> Result<(),Box<dyn std::error::Error> > {
@@ -21,6 +21,13 @@ async fn main () -> Result<(),Box<dyn std::error::Error> > {
                 web::scope("/course")
                 .route("/purchase", web::post().to(course_route::purchase))
                 .route("/preview", web::get().to(course_route::preview))
+            )
+            .service(
+                web::scope("/admin")
+                .route("/dashboard", web::get().to(admin_route::admin_dashboard))
+                .route("/course", web::post().to(admin_route::create_course))
+                .route("/course/{id}", web::put().to(admin_route::update_course))
+                .route("/course/bulk", web::get().to(admin_route::get_all_course))
             )
     })
     .bind("127.0.0.1:7000")?

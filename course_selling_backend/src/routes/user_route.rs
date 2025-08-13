@@ -9,6 +9,12 @@ pub async fn register(user_data:web::Json<Users>, db_client:web::Data<Client>)->
     let user = user_data.into_inner();
     let collection = db_client.database("course_selling").collection::<Users>("users");
 
+    let user_exists = collection.find_one(doc! {"email": &user.email}).await.unwrap_or(None);
+
+    if user_exists.is_some() {
+        return HttpResponse::BadRequest().body("User already exists");
+    }
+
     match collection.insert_one(user).await {
         Ok(m) => {
             HttpResponse::Ok().body(format!("user is Register: {:?}",m))

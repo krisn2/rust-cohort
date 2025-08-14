@@ -1,8 +1,12 @@
 use actix_web::{ web, HttpResponse, Responder};
 use crate::{jwt::create_jwt, models::admin_model::{Admin, Loginadmin}, models::course_model::{Course, CourseUpdate}};
 use mongodb::{bson::{doc, self}, Client};
+use std::env;
 
-const JWT_ADMIN_SECRET: &str = "admin_being";
+
+fn get_jwt_admin_secret() -> String {
+    env::var("JWT_ADMIN_SECRET").unwrap_or_else(|_| "admin_being".to_string())
+}
 
 pub async fn admin_login(data: web::Json<Loginadmin>, db: web::Data<Client>) -> impl Responder {
     
@@ -11,7 +15,7 @@ pub async fn admin_login(data: web::Json<Loginadmin>, db: web::Data<Client>) -> 
 
     if let Some(admin) = collection.find_one(doc! {"email": admin_data.email}).await.unwrap_or(None) {
         if admin.password == admin_data.password {
-            let token = create_jwt(admin.id.unwrap().to_string(), JWT_ADMIN_SECRET);
+            let token = create_jwt(admin.id.unwrap().to_string(), &get_jwt_admin_secret());
             return HttpResponse::Ok().json(token);
         }else {
             return HttpResponse::Unauthorized().body("Invalid password");
@@ -23,6 +27,9 @@ pub async fn admin_login(data: web::Json<Loginadmin>, db: web::Data<Client>) -> 
 
 pub async fn admin_register(data : web::Json<Admin>, db: web::Data<Client>) -> impl Responder {
     let admin_data = data.into_inner(); // make mut foe hashing
+    if admin_data.firstname.is_ascii() || admin_data.lastname.is_empty() || admin_data.email.is_empty() || admin_data.password.is_empty() {
+        return HttpResponse::BadRequest().body("Fill the required fields");
+    }
     let collection = db.database("course_selling").collection::<Admin>("admins");
 
     let admin_exists = collection.find_one(doc! {"email": &admin_data.email}).await.unwrap_or(None);
@@ -32,8 +39,8 @@ pub async fn admin_register(data : web::Json<Admin>, db: web::Data<Client>) -> i
     }
 
     match collection.insert_one(admin_data).await {
-        Ok(succes) => {
-            HttpResponse::Ok().body(format!("Admin registered successfully: {:?}", succes))
+        Ok(success) => {
+            HttpResponse::Ok().body(format!("Admin registered successfully: {:?}", success.inserted_id))
         }
         Err(e) => {
             HttpResponse::InternalServerError().body(format!("Failed to register admin: {:?}", e))
@@ -44,6 +51,10 @@ pub async fn admin_register(data : web::Json<Admin>, db: web::Data<Client>) -> i
 
 pub async fn create_course(data :web::Json<Course>, db: web::Data<Client>) -> impl Responder {
     let course = data.into_inner();
+    if course.title.is_empty() || course.description.is_empty() || course.price <= 0.0 || course.img_url.is_empty() {
+        return HttpResponse::BadRequest().body("fill the course data");
+    }
+
     let collection = db.database("course_selling").collection::<Course>("courses");
 
     match collection.insert_one(course).await {
@@ -56,11 +67,11 @@ pub async fn create_course(data :web::Json<Course>, db: web::Data<Client>) -> im
     }
 }
 
-pub async fn update_course(data : web::Json<CourseUpdate>, db: web::Data<Client>) -> impl Responder {
+pub async fn update_course(data : web::Json<CourseUpdate>, id: web::Path<String>, db: web::Data<Client>) -> impl Responder {
     let course_update = data.into_inner();
     let collection = db.database("course_selling").collection::<Course>("courses");
 
-    let course_found = collection.find_one(doc! {"_id": course_update.id}).await.unwrap_or(None);
+    let course_found = collection.find_one(doc! {"_id": id.into_inner()}).await.unwrap_or(None);
 
     if course_found.is_none() {
         return HttpResponse::NotFound().body("Course not found");

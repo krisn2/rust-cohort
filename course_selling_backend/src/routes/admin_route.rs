@@ -1,5 +1,5 @@
-use actix_web::{ web, HttpResponse, Responder};
-use crate::{jwt::create_jwt, models::admin_model::{Admin, Loginadmin}, models::course_model::{Course, CourseUpdate}};
+use actix_web::{ web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use crate::{jwt::{create_jwt, Claims}, models::{admin_model::{Admin, Loginadmin}, course_model::{Course, CourseUpdate}}};
 use mongodb::{bson::{doc, self}, Client};
 use std::env;
 
@@ -67,22 +67,29 @@ pub async fn create_course(data :web::Json<Course>, db: web::Data<Client>) -> im
     }
 }
 
-pub async fn update_course(data : web::Json<CourseUpdate>, id: web::Path<String>, db: web::Data<Client>) -> impl Responder {
-    let course_update = data.into_inner();
+pub async fn update_course(data : web::Json<CourseUpdate>, id: web::Path<String>, db: web::Data<Client>, req: HttpRequest) -> impl Responder {
+
+    let claims = req.extensions().get::<Claims>().cloned();
+    if claims.is_none() {
+        return HttpResponse::Unauthorized().body("Unauthorized");
+    }
+    let admin_id = claims.unwrap().sub.to_string();
+
+    let course_data = data.into_inner();
     let collection = db.database("course_selling").collection::<Course>("courses");
 
-    let course_found = collection.find_one(doc! {"_id": id.into_inner()}).await.unwrap_or(None);
+    let course_found = collection.find_one(doc! {"_id": id.into_inner(), "creator_id": admin_id}).await.unwrap_or(None);
 
     if course_found.is_none() {
-        return HttpResponse::NotFound().body("Course not found");
+        return HttpResponse::NotFound().body("Course not found or you are not the creator");
     }
 
-    let update_doc = match bson::to_document(&course_update) {
+    let update_doc = match bson::to_document(&course_data) {
         Ok(doc) => doc,
         Err(e) => return HttpResponse::InternalServerError().body(format!("Failed to serialize update: {:?}", e)),
     };
 
-    match collection.update_one(doc! {"_id": course_update.id}, doc! {"$set": update_doc}).await {
+    match collection.update_one(doc! {"_id": course_found.unwrap().id}, update_doc).await {
         Ok(result) => {
             HttpResponse::Ok().body(format!("Course updated successfully: {:?}", result))
         }

@@ -14,7 +14,6 @@ pub struct Course{
 
 #[derive(Serialize, Deserialize)]
 pub struct CourseUpdate {
-    pub id: ObjectId,
     pub title: Option<String>,
     pub description: Option<String>,
     pub price: Option<f32>,

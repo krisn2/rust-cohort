@@ -1,7 +1,7 @@
 use jsonwebtoken::{encode, Header, EncodingKey, DecodingKey, Validation, Algorithm};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize,Clone)]
 pub struct Claims {
     pub sub: String,
     pub exp: usize,

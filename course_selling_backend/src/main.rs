@@ -1,5 +1,6 @@
 use actix_web::{web, App, HttpServer};
 use std::env;
+use dotenvy::dotenv;
 
 mod routes;
 mod models;
@@ -12,6 +13,7 @@ use middleware::auth::AuthMiddleware;
 
 #[actix_web::main]
 async fn main () -> Result<(),Box<dyn std::error::Error> > {
+    dotenv().ok();
 
     let jwt_user_secret = env::var("JWT_USER_SECRET")?;
     let jwt_admin_secret = env::var("JWT_ADMIN_SECRET")?;

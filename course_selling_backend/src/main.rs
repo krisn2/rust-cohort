@@ -2,6 +2,7 @@ use actix_web::{web, App, HttpServer};
 
 mod routes;
 mod models;
+mod jwt;
 use routes::{course_route, user_route, admin_route};
 
 #[actix_web::main]
@@ -24,10 +25,10 @@ async fn main () -> Result<(),Box<dyn std::error::Error> > {
             )
             .service(
                 web::scope("/admin")
-                .route("/dashboard", web::get().to(admin_route::admin_dashboard))
+                .route("/login", web::get().to(admin_route::admin_login))
+                .route("/register", web::post().to(admin_route::admin_register))
                 .route("/course", web::post().to(admin_route::create_course))
                 .route("/course/{id}", web::put().to(admin_route::update_course))
-                .route("/course/bulk", web::get().to(admin_route::get_all_course))
             )
     })
     .bind("127.0.0.1:7000")?

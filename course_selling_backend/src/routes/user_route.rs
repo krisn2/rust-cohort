@@ -2,11 +2,14 @@
 use actix_web::{web, HttpResponse, Responder};
 use mongodb::{bson::doc, Client};
 
-use crate::models::user_model::{LoginUser, Users};
+const JWT_USER_SECRET: &str = "human_being";
+
+use crate::{jwt::create_jwt, models::user_model::{LoginUser, Users}};
 
 pub async fn register(user_data:web::Json<Users>, db_client:web::Data<Client>)-> impl Responder {
 
     let user = user_data.into_inner();
+    println!("User data: {:?}", user);
     let collection = db_client.database("course_selling").collection::<Users>("users");
 
     let user_exists = collection.find_one(doc! {"email": &user.email}).await.unwrap_or(None);
@@ -33,8 +36,14 @@ pub async fn login(db_client:web::Data<Client>, cred: web::Json<LoginUser>) -> i
     let user = col.find_one(doc! {"email":&cred.email}).await.unwrap_or(None);
 
     if let Some(user) = user {
-       return HttpResponse::Ok().body(format!("user_id:{:?}",user.id))
+        if user.password == cred.password {
+            let token = create_jwt(user.id.unwrap().to_string(), JWT_USER_SECRET);
+            return HttpResponse::Ok().body(token);
+        } else {
+            return HttpResponse::Unauthorized().body("Invalid password");
+        }
+    } else {
+        return HttpResponse::NotFound().body("User not found");
     }
-    HttpResponse::Unauthorized().body("Invalid email or password")
 
 }

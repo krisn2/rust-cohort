@@ -11,3 +11,12 @@ pub struct Course{
     pub img_url: String,
     pub creator_id: ObjectId,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct CourseUpdate {
+    pub id: ObjectId,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub price: Option<f32>,
+    pub img_url: Option<String>,
+}

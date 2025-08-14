@@ -1,18 +1,83 @@
-use actix_web::{Responder, HttpResponse};
+use actix_web::{ web, HttpResponse, Responder};
+use crate::{jwt::create_jwt, models::admin_model::{Admin, Loginadmin}, models::course_model::{Course, CourseUpdate}};
+use mongodb::{bson::{doc, self}, Client};
 
-pub async fn admin_dashboard() -> impl Responder {
-    HttpResponse::Ok().body("Welcome to the Admin Dashboard")
+const JWT_ADMIN_SECRET: &str = "admin_being";
+
+pub async fn admin_login(data: web::Json<Loginadmin>, db: web::Data<Client>) -> impl Responder {
+    
+    let admin_data = data.into_inner();
+    let collection = db.database("course_selling").collection::<Admin>("admins");
+
+    if let Some(admin) = collection.find_one(doc! {"email": admin_data.email}).await.unwrap_or(None) {
+        if admin.password == admin_data.password {
+            let token = create_jwt(admin.id.unwrap().to_string(), JWT_ADMIN_SECRET);
+            return HttpResponse::Ok().json(token);
+        }else {
+            return HttpResponse::Unauthorized().body("Invalid password");
+        }
+    }else {
+        return HttpResponse::Unauthorized().body("Admin not found");
+    }
 }
 
-pub async fn create_course() -> impl Responder {
-    HttpResponse::Ok().body("Course created successfully")
+pub async fn admin_register(data : web::Json<Admin>, db: web::Data<Client>) -> impl Responder {
+    let admin_data = data.into_inner(); // make mut foe hashing
+    let collection = db.database("course_selling").collection::<Admin>("admins");
+
+    let admin_exists = collection.find_one(doc! {"email": &admin_data.email}).await.unwrap_or(None);
+
+    if admin_exists.is_some() {
+        return HttpResponse::BadRequest().body("Admin already exists");
+    }
+
+    match collection.insert_one(admin_data).await {
+        Ok(succes) => {
+            HttpResponse::Ok().body(format!("Admin registered successfully: {:?}", succes))
+        }
+        Err(e) => {
+            HttpResponse::InternalServerError().body(format!("Failed to register admin: {:?}", e))
+        }
+    }
 }
 
-pub async fn update_course() -> impl Responder {
-    HttpResponse::Ok().body("Course updated successfully")
+
+pub async fn create_course(data :web::Json<Course>, db: web::Data<Client>) -> impl Responder {
+    let course = data.into_inner();
+    let collection = db.database("course_selling").collection::<Course>("courses");
+
+    match collection.insert_one(course).await {
+        Ok(result) => {
+            HttpResponse::Ok().body(format!("Course created successfully: {:?}", result))
+        }
+        Err(e) => {
+            HttpResponse::InternalServerError().body(format!("Failed to create course: {:?}", e))
+        }
+    }
 }
 
-pub async fn get_all_course() -> impl Responder {
-    HttpResponse::Ok().body("List of all courses")
-}
+pub async fn update_course(data : web::Json<CourseUpdate>, db: web::Data<Client>) -> impl Responder {
+    let course_update = data.into_inner();
+    let collection = db.database("course_selling").collection::<Course>("courses");
 
+    let course_found = collection.find_one(doc! {"_id": course_update.id}).await.unwrap_or(None);
+
+    if course_found.is_none() {
+        return HttpResponse::NotFound().body("Course not found");
+    }
+
+    let update_doc = match bson::to_document(&course_update) {
+        Ok(doc) => doc,
+        Err(e) => return HttpResponse::InternalServerError().body(format!("Failed to serialize update: {:?}", e)),
+    };
+
+    match collection.update_one(doc! {"_id": course_update.id}, doc! {"$set": update_doc}).await {
+        Ok(result) => {
+            HttpResponse::Ok().body(format!("Course updated successfully: {:?}", result))
+        }
+        Err(e) => {
+            HttpResponse::InternalServerError().body(format!("Failed to update course: {:?}", e))
+        }
+    }
+
+}

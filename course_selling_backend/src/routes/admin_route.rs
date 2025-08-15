@@ -28,7 +28,7 @@ pub async fn admin_login(data: web::Json<Loginadmin>, db: web::Data<Client>) -> 
 
 pub async fn admin_register(data : web::Json<Admin>, db: web::Data<Client>) -> impl Responder {
     let admin_data = data.into_inner(); // make mut foe hashing
-    if admin_data.firstname.is_ascii() || admin_data.lastname.is_empty() || admin_data.email.is_empty() || admin_data.password.is_empty() {
+    if admin_data.firstname.is_empty() || admin_data.lastname.is_empty() || admin_data.email.is_empty() || admin_data.password.is_empty() {
         return HttpResponse::BadRequest().body("Fill the required fields");
     }
     let collection = db.database("course_selling").collection::<Admin>("admins");

@@ -33,6 +33,7 @@ async fn main () -> Result<(),Box<dyn std::error::Error> > {
                 .route("/preview", web::get().to(course_route::preview))
                 .wrap(AuthMiddleware {secret: jwt_user_secret.clone()})
                 .route("/purchase", web::post().to(course_route::purchase))
+                .route("/purchases", web::get().to(course_route::purchases))
             )
             .service(
                 web::scope("/admin")

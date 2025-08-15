@@ -1,4 +1,5 @@
 use actix_web::{ web, HttpMessage, HttpRequest, HttpResponse, Responder};
+use futures::TryStreamExt;
 use crate::{jwt::{create_jwt, Claims}, models::{admin_model::{Admin, Loginadmin}, course_model::{Course, CourseUpdate}}};
 use mongodb::{bson::{doc, self}, Client};
 use std::env;
@@ -69,6 +70,9 @@ pub async fn create_course(data :web::Json<Course>, db: web::Data<Client>) -> im
 
 pub async fn update_course(data : web::Json<CourseUpdate>, id: web::Path<String>, db: web::Data<Client>, req: HttpRequest) -> impl Responder {
 
+    if id.is_empty() {
+        return HttpResponse::Ok().body("Course id is not Send");
+    }
     let claims = req.extensions().get::<Claims>().cloned();
     if claims.is_none() {
         return HttpResponse::Unauthorized().body("Unauthorized");
@@ -98,4 +102,30 @@ pub async fn update_course(data : web::Json<CourseUpdate>, id: web::Path<String>
         }
     }
 
+}
+
+pub async fn get_all_course(db:web::Data<Client>, req: HttpRequest) -> impl Responder {
+    let claims = req.extensions().get::<Claims>().cloned();
+
+
+    if claims.is_none() {
+        return HttpResponse::Unauthorized().body("Unauthorized");
+    }
+    let admin_id = claims.unwrap().sub.to_string();
+
+    let collection = db.database("course_selling").collection::<Course>("courses");
+
+    match collection.find(doc! {"creator_id": admin_id}).await {
+        Ok(mut cursor) => {
+            let mut courses = Vec::new();
+            while let Some(course) = cursor.try_next().await.unwrap_or(None)  {
+                courses.push(course);
+            }
+            return HttpResponse::Ok().json(courses)
+        }
+        Err(err) => {
+            eprintln!("{:?}",err);
+            return HttpResponse::InternalServerError().body("database error");
+        }
+    }
 }

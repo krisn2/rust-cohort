@@ -43,6 +43,7 @@ async fn main () -> Result<(),Box<dyn std::error::Error> > {
                     .wrap(AuthMiddleware {secret: jwt_admin_secret.clone()})
                     .route("/create", web::post().to(admin_route::create_course))
                     .route("/update/{id}", web::put().to(admin_route::update_course))
+                    .route("/All-course", web::get().to(admin_route::get_all_course))
                 )
             )
     })

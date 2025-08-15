@@ -19,3 +19,9 @@ pub struct CourseUpdate {
     pub price: Option<f32>,
     pub img_url: Option<String>,
 }
+
+#[derive(Serialize, Deserialize,Debug)]
+pub struct PurchaseCourse {
+   pub  user_id: ObjectId,
+   pub  course_id: ObjectId
+}

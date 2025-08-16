@@ -1,0 +1,9 @@
+target
+**/*.pdf
+**/*.log
+**/*.aux
+**/*.synctex*
+**/*.out
+**/*.toc
+**/*.gz
+.DS_Store

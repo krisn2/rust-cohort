@@ -1,7 +1,7 @@
 use actix_web::{web, HttpMessage, HttpRequest, HttpResponse, Responder};
 use futures::StreamExt;
 use mongodb::{Client, bson::doc};
-use crate::{jwt::Claims, models::course_model::{Course, PurchaseCourse}};
+use crate::{jwt::Claims, models::{course_model::Course, purchase_model::PurchaseCourse}};
 
 
 pub async fn purchase(purchase:web::Json<PurchaseCourse>, db:web::Data<Client>, id:web::Path<String>)-> impl Responder {

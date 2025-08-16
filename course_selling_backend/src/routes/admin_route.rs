@@ -50,23 +50,37 @@ pub async fn admin_register(data : web::Json<Admin>, db: web::Data<Client>) -> i
 }
 
 
-pub async fn create_course(data :web::Json<Course>, db: web::Data<Client>) -> impl Responder {
-    let course = data.into_inner();
+pub async fn create_course(data: web::Json<CourseUpdate>, db: web::Data<Client>, req: HttpRequest) -> impl Responder {
+    let claims = match req.extensions().get::<Claims>() {
+        Some(c) => c.clone(),
+        None => return HttpResponse::Unauthorized().body("Unauthorized"),
+    };
+
+    let admin_id = match bson::oid::ObjectId::parse_str(&claims.sub) {
+        Ok(oid) => oid,
+        Err(_) => return HttpResponse::BadRequest().body("Invalid admin ID"),
+    };
+
+    let course = Course {
+        id: None,
+        title: data.title.clone().unwrap_or_default(),
+        description: data.description.clone().unwrap_or_default(),
+        price: data.price.unwrap_or(0.0),
+        img_url: data.img_url.clone().unwrap_or_default(),
+        creator_id: admin_id,
+    };
+
     if course.title.is_empty() || course.description.is_empty() || course.price <= 0.0 || course.img_url.is_empty() {
-        return HttpResponse::BadRequest().body("fill the course data");
+        return HttpResponse::BadRequest().body("Invalid course data");
     }
 
     let collection = db.database("course_selling").collection::<Course>("courses");
-
     match collection.insert_one(course).await {
-        Ok(result) => {
-            HttpResponse::Ok().body(format!("Course created successfully: {:?}", result))
-        }
-        Err(e) => {
-            HttpResponse::InternalServerError().body(format!("Failed to create course: {:?}", e))
-        }
+        Ok(result) => HttpResponse::Ok().body(format!("Course created successfully: {:?}", result.inserted_id)),
+        Err(e) => HttpResponse::InternalServerError().body(format!("Failed to create course: {:?}", e)),
     }
 }
+
 
 pub async fn update_course(data : web::Json<CourseUpdate>, id: web::Path<String>, db: web::Data<Client>, req: HttpRequest) -> impl Responder {
 

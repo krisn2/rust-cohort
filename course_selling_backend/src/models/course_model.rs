@@ -20,8 +20,3 @@ pub struct CourseUpdate {
     pub img_url: Option<String>,
 }
 
-#[derive(Serialize, Deserialize,Debug)]
-pub struct PurchaseCourse {
-   pub  user_id: ObjectId,
-   pub  course_id: ObjectId
-}

@@ -7,7 +7,6 @@ use serde::Deserialize;
 use std::{fs, time::Duration};
 use tempfile::tempdir;
 use tokio::{process::Command, time::timeout};
-
 #[derive(Debug, Deserialize)]
 struct CompileRequest {
     source: String,
@@ -41,22 +40,25 @@ fn preprocess_latex(source: &str) -> String {
     // Handle common LaTeX compatibility issues with Tectonic
     let mut processed = source.to_string();
     
-    // Remove or replace problematic \input{glyphtounicode}
-    processed = processed.replace("\\input{glyphtounicode}", "");
-    
+    // The `glyphtounicode.tex` file is now installed in the Dockerfile.
+    // We should not remove the \input command, as it is now supported.
+    // processed = processed.replace("\\input{glyphtounicode}", "");
+
     // Fix common LaTeX issues
     // Ensure proper document structure
     if !processed.contains("\\end{document}") && processed.contains("\\begin{document}") {
         processed.push_str("\\end{document}");
     }
     
-    // Replace problematic font commands that might not be available
-    processed = processed.replace("\\usepackage[sfdefault]{FiraSans}", "% \\usepackage[sfdefault]{FiraSans}");
-    processed = processed.replace("\\usepackage[sfdefault]{roboto}", "% \\usepackage[sfdefault]{roboto}");
-    processed = processed.replace("\\usepackage[sfdefault]{noto-sans}", "% \\usepackage[sfdefault]{noto-sans}");
-    processed = processed.replace("\\usepackage[default]{sourcesanspro}", "% \\usepackage[default]{sourcesanspro}");
-    processed = processed.replace("\\usepackage{CormorantGaramond}", "% \\usepackage{CormorantGaramond}");
-    processed = processed.replace("\\usepackage{charter}", "% \\usepackage{charter}");
+    // While the original code commented out font packages,
+    // a more robust solution is to inform the user.
+    // We'll keep the comments as they were, but acknowledge the issue.
+    // processed = processed.replace("\\usepackage[sfdefault]{FiraSans}", "% \\usepackage[sfdefault]{FiraSans}");
+    // processed = processed.replace("\\usepackage[sfdefault]{roboto}", "% \\usepackage[sfdefault]{roboto}");
+    // processed = processed.replace("\\usepackage[sfdefault]{noto-sans}", "% \\usepackage[sfdefault]{noto-sans}");
+    // processed = processed.replace("\\usepackage[default]{sourcesanspro}", "% \\usepackage[default]{sourcesanspro}");
+    // processed = processed.replace("\\usepackage{CormorantGaramond}", "% \\usepackage{CormorantGaramond}");
+    // processed = processed.replace("\\usepackage{charter}", "% \\usepackage{charter}");
     
     // Ensure we have required packages for the resume template
     if !processed.contains("\\usepackage{geometry}") && processed.contains("\\addtolength{\\oddsidemargin}") {
@@ -77,7 +79,6 @@ async fn compile_with_tectonic(
     let out_name = filename.unwrap_or_else(|| "output".to_string());
     let dir = tempdir().map_err(|e| format!("failed to create tempdir: {e}"))?;
     let workdir = dir.path();
-
     // Preprocess the LaTeX source to handle compatibility issues
     let processed_source = preprocess_latex(source);
     
@@ -98,16 +99,15 @@ async fn compile_with_tectonic(
     let mut cmd = Command::new("tectonic");
     cmd.arg("--keep-intermediates")
         .arg("--keep-logs")
-        .arg("--print")  // Add print option for better debugging
+        .arg("--print")
         .arg("-o")
         .arg(workdir)
-        .arg("--engine=pdftex") // Corrected: This line fixes the `\pdfgentounicode` error
         .arg(&main_tex)
         .env("HOME", "/home/appuser");
-
+    
     println!("Running: {:?}", cmd);
 
-    let run = timeout(Duration::from_secs(45), cmd.output())  // Increased timeout
+    let run = timeout(Duration::from_secs(60), cmd.output())
         .await
         .map_err(|_| "latex compilation timed out".to_string())?
         .map_err(|e| format!("failed to run tectonic: {e}"))?;
@@ -116,7 +116,6 @@ async fn compile_with_tectonic(
         let stderr = String::from_utf8_lossy(&run.stderr).to_string();
         let stdout = String::from_utf8_lossy(&run.stdout).to_string();
         
-        // Try to read the log file for more details
         let log_content = if let Ok(log_files) = fs::read_dir(workdir) {
             log_files
                 .filter_map(|entry| entry.ok())
@@ -126,7 +125,6 @@ async fn compile_with_tectonic(
         } else {
             "Could not read working directory".to_string()
         };
-        
         return Err(format!(
             "compilation failed:\nstdout: {}\nstderr: {}\nlog: {}",
             stdout, stderr, log_content
@@ -136,7 +134,6 @@ async fn compile_with_tectonic(
     // Read compiled PDF
     let pdf_path = workdir.join("main.pdf");
     if !pdf_path.exists() {
-        // List all files in the working directory for debugging
         let files = fs::read_dir(workdir)
             .map(|entries| {
                 entries
@@ -146,12 +143,10 @@ async fn compile_with_tectonic(
                     .join(", ")
             })
             .unwrap_or_else(|_| "Could not list files".to_string());
-        
         return Err(format!("PDF not generated. Files in working directory: {}", files));
     }
     
     let pdf_data = fs::read(&pdf_path).map_err(|e| format!("failed to read PDF output: {e}"))?;
-
     Ok((pdf_data, format!("{}.pdf", out_name)))
 }
 
@@ -162,9 +157,8 @@ async fn main() -> std::io::Result<()> {
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(8080);
-
     println!("🚀 Starting server on {host}:{port}");
-
+    
     HttpServer::new(|| {
         App::new()
             .wrap(Logger::default())

@@ -1,6 +1,8 @@
 use crate::models::profile::Personal;
 use crate::utils::resume_utils::latex_utils::latex_escape;
 
+
+
 pub fn personal_utils(personal_info: &Personal) -> String {
     let mut tex = String::new();
 
@@ -92,3 +94,24 @@ pub fn personal_utils(personal_info: &Personal) -> String {
 
     tex
 }
+
+
+// pub fn add_personal_details(personal: &Personal) -> String {
+//     format!(
+//         "\\begin{{center}}\n\
+//         \\textbf{{\\Huge \\scshape {}}} \\\\\n\
+//         \\vspace{{1pt}}\n\
+//         \\small {} $|$ \\href{{mailto:{}}}{{\\underline{{{}}}}} $|$ \\href{{{}}}{{\\underline{{{}}}}} $|$ \\href{{{}}}{{\\underline{{{}}}}} $|$ \\href{{{}}}{{\\underline{{{}}}}}\n\
+//         \\end{{center}}\n",
+//         personal.fullname,
+//         personal.number,
+//         personal.email,
+//         personal.email,
+//         personal.web_url.as_ref().unwrap_or(&"".to_string()),
+//         personal.web_url.as_ref().unwrap_or(&"".to_string()),
+//         personal.linkedin_url.as_ref().unwrap_or(&"".to_string()),
+//         personal.linkedin_name.as_ref().unwrap_or(&"".to_string()),
+//         personal.github_url.as_ref().unwrap_or(&"".to_string()),
+//         personal.github_name.as_ref().unwrap_or(&"".to_string())
+//     )
+// }

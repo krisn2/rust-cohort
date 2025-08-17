@@ -1,5 +1,8 @@
 use crate::models::education::EducationSchema;
 use crate::utils::resume_utils::latex_utils::{latex_escape, esc_if_not_empty, format_date_range};
+
+
+
 pub fn education_utils(education_schema: &EducationSchema) -> String {
     if education_schema.educations.is_empty() {
         return String::new();

@@ -23,7 +23,7 @@ use reqwest::Client;
 pub async fn handle_resume(data: web::Json<ResumeRequest>) -> impl Responder {
     let resume = data.into_inner();
     let tex_code = resume_utils_fn(&resume);
-    println!("{:?}",tex_code);
+    // println!("{:?}",tex_code);
 
     // Prepare the payload for the external microservice
     let payload = json!({

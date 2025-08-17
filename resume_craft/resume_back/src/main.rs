@@ -6,7 +6,6 @@ mod utils;
 
 use actix_cors::Cors;
 use actix_web::{App, HttpServer, http, web};
-use controllers::ai_controller::improve_projects_ai;
 use controllers::resume_controller::handle_resume;
 use handlers::user_handlers::{login, register};
 use middleware::auth::AuthMiddleware;
@@ -16,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
     let mongo_url = std::env::var("MONGO_URL")?;
     let origin = std::env::var("ORIGIN")?;
-    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string()); // ✅ get PORT from env
+    let port = std::env::var("PORT").unwrap_or_else(|_| "2222".to_string()); // ✅ get PORT from env
 
     let client = mongodb::Client::with_uri_str(&mongo_url).await?;
 
@@ -36,11 +35,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 web::resource("/resume")
                     .wrap(AuthMiddleware)
                     .route(web::post().to(handle_resume)),
-            )
-            .service(
-                web::resource("/ai/improve-projects")
-                    .wrap(AuthMiddleware)
-                    .route(web::post().to(improve_projects_ai)),
             )
     })
     .bind(format!("0.0.0.0:{}", port))? // ✅ listen on all interfaces

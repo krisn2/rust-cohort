@@ -8,7 +8,7 @@ pub struct User {
     pub name: String,
     pub email: String,
     pub phone: String,
-    pub password: String, // Store hashed password
+    pub password: String, 
 }
 
 #[derive(Serialize, Deserialize)]

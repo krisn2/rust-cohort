@@ -7,7 +7,7 @@ pub struct User {
     pub id: Option<ObjectId>,
     pub name: String,
     pub email: String,
-    pub phone: String,
+    pub phone: Option<String>,
     pub password: String, 
 }
 
